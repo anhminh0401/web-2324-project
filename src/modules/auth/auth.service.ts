@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { hashPassword } from 'src/helper/utils';
 import { RegisterDto } from './dtos/auth.dto';
-import { AppDataSource } from 'src/database/connect-database';
 import { User } from '../users/entities/user.entity';
-import { Errors } from 'src/helper/errors';
 import * as bcrypt from 'bcrypt';
+import { Errors } from '../../helper/errors';
+import { hashPassword } from '../../helper/utils';
+import { AppDataSource } from '../../database/connect-database';
 
 @Injectable()
 export class AuthService {

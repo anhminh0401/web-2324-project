@@ -9,7 +9,7 @@ import {
 import { AuthService } from './auth.service';
 import { RegisterDto, SignInDto } from './dtos/auth.dto';
 import { Response } from 'express';
-import { ResponseWrapper } from 'src/helper/response-wrapper';
+import { ResponseWrapper } from '../../helper/response-wrapper';
 
 @Controller('auth')
 export class AuthController {

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { UserAdvance } from './entities/user-advance.entity';
 import { InfoProfileRequest, InfoProfileResponse } from './dtos/profile.dto';
-import { Errors } from 'src/helper/errors';
-import { AppDataSource } from 'src/database/connect-database';
+import { Errors } from '../../helper/errors';
+import { AppDataSource } from '../../database/connect-database';
 
 @Injectable()
 export class UsersService {

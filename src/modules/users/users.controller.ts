@@ -11,7 +11,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { UsersService } from './users.service';
 import { InfoProfileRequest } from './dtos/profile.dto';
 import { Response } from 'express';
-import { ResponseWrapper } from 'src/helper/response-wrapper';
+import { ResponseWrapper } from '../../helper/response-wrapper';
 
 @Controller('users')
 export class UsersController {
