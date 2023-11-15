@@ -26,7 +26,7 @@ export class AuthService {
       throw Errors.cannotSignIn;
     }
 
-    const payload = { sub: user.userId, username: user.username };
+    const payload = { userId: user.userId, username: user.username };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = user;
     result['access_token'] = await this.jwtService.signAsync(payload);

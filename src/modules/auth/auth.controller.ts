@@ -4,14 +4,10 @@ import {
   Post,
   HttpCode,
   HttpStatus,
-  UseGuards,
-  Get,
-  Request,
   Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto, SignInDto } from './dtos/auth.dto';
-import { AuthGuard } from './auth.guard';
 import { Response } from 'express';
 import { ResponseWrapper } from 'src/helper/response-wrapper';
 
@@ -34,11 +30,5 @@ export class AuthController {
   async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
     const data = await this.authService.register(registerDto);
     res.send(new ResponseWrapper(data, null, null));
-  }
-
-  @UseGuards(AuthGuard)
-  @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
   }
 }
