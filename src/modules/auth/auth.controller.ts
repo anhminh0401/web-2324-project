@@ -7,10 +7,13 @@ import {
   UseGuards,
   Get,
   Request,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignInDto } from './dtos/auth.dto';
+import { RegisterDto, SignInDto } from './dtos/auth.dto';
 import { AuthGuard } from './auth.guard';
+import { Response } from 'express';
+import { ResponseWrapper } from 'src/helper/response-wrapper';
 
 @Controller('auth')
 export class AuthController {
@@ -18,8 +21,19 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() signInDto: SignInDto) {
-    return this.authService.signIn(signInDto.username, signInDto.password);
+  async signIn(@Body() signInDto: SignInDto, @Res() res: Response) {
+    const data = await this.authService.signIn(
+      signInDto.username,
+      signInDto.password,
+    );
+    res.send(new ResponseWrapper(data, null, null));
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('register')
+  async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
+    const data = await this.authService.register(registerDto);
+    res.send(new ResponseWrapper(data, null, null));
   }
 
   @UseGuards(AuthGuard)

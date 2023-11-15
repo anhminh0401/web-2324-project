@@ -1,7 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { hashPassword } from 'src/helper/utils';
+import { RegisterDto } from './dtos/auth.dto';
+import { AppDataSource } from 'src/database/connect-database';
+import { User } from '../users/entities/user.entity';
+import { Errors } from 'src/helper/errors';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -11,21 +16,43 @@ export class AuthService {
   ) {}
 
   async signIn(username: string, pass: string): Promise<any> {
-    console.log(
-      '🚀 ~ file: auth.service.ts:14 ~ AuthService ~ signIn ~ username:',
-      username,
-    );
     const user = await this.usersService.findOne(username);
     if (!user) {
-      throw new UnauthorizedException();
+      throw Errors.cannotSignIn;
     }
-    const hashPass = await hashPassword(user?.password);
-    if (hashPass !== pass) {
-      throw new UnauthorizedException();
+
+    const isPasswordValid = await bcrypt.compare(pass, user.password);
+    if (!isPasswordValid) {
+      throw Errors.cannotSignIn;
     }
+
     const payload = { sub: user.userId, username: user.username };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } = user;
+    result['access_token'] = await this.jwtService.signAsync(payload);
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      ...result,
     };
   }
+
+  public register = async (params: RegisterDto) => {
+    const { username, password, fullname } = params;
+    // find username
+    const user = await this.usersService.findOne(username);
+    if (user) {
+      throw Errors.existUsername;
+    }
+
+    const hashPass = await hashPassword(password);
+    // save db
+    await AppDataSource.transaction(async (transaction) => {
+      const user = await transaction.save(User, {
+        username: username,
+        password: hashPass,
+        fullname: fullname,
+      });
+      if (!user) throw Errors.cannotInsertUser;
+    });
+    return true;
+  };
 }
