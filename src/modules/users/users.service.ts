@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { UserAdvance } from './entities/user-advance.entity';
-import { InfoProfileRequest } from './dtos/profile.dto';
+import { InfoProfileRequest, InfoProfileResponse } from './dtos/profile.dto';
 import { Errors } from 'src/helper/errors';
 import { AppDataSource } from 'src/database/connect-database';
 
@@ -15,7 +15,8 @@ export class UsersService {
     const user = User.findOne({ where: { userId: userId } });
     const userAdvance = UserAdvance.findOne({ where: { userId: userId } });
     const data = await Promise.all([user, userAdvance]);
-    return data;
+    const result = InfoProfileResponse.fromDatabase({ ...data[0], ...data[1] });
+    return result;
   };
 
   public editProfile = async (userId: number, info: InfoProfileRequest) => {
