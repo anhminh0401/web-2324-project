@@ -18,4 +18,5 @@ export const Errors = {
   existUsername: new CustomError('existUsername', 'username existed'),
   cannotSignIn: new CustomError('cannotSignIn', 'username or password wrong'),
   findNotFoundUser: new CustomError('findNotFoundUser', 'userId do not exist'),
+  notHaveRole: new CustomError('notHaveRole', 'not have role'),
 };
