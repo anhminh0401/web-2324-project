@@ -43,5 +43,6 @@ export class UsersService {
         ...infoUserAdvance,
       });
     });
+    return true;
   };
 }
