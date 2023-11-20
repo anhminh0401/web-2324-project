@@ -6,7 +6,8 @@ import { CustomExceptionFilter } from './modules/middlewares/error-handle.middle
 async function bootstrap() {
   // connect database mysql by typeORM
   await AppDataSource.initialize();
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule);
+  app.enableCors();
   app.useGlobalFilters(new CustomExceptionFilter());
   await app.listen(3000, () => {
     console.log('Server is running at port 3000');
