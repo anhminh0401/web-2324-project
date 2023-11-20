@@ -12,11 +12,11 @@ export class CustomError extends Error {
 }
 
 export const Errors = {
-  serverError: new CustomError('serverError', 'Something error in server', 500),
-  badRequest: new CustomError('badRequest', 'Miss info'),
-  cannotInsertUser: new CustomError('cannotInsertUser', 'Cannot insert user'),
-  existUsername: new CustomError('existUsername', 'username existed'),
-  cannotSignIn: new CustomError('cannotSignIn', 'username or password wrong'),
-  findNotFoundUser: new CustomError('findNotFoundUser', 'userId do not exist'),
+  serverError: new CustomError('serverError', 'Đã có lỗi xảy ra', 500),
+  badRequest: new CustomError('badRequest', 'Thiếu thông tin'),
+  cannotInsertUser: new CustomError('cannotInsertUser', 'Không thể thêm người dùng'),
+  existUsername: new CustomError('existUsername', 'Tên người dùng đã tồn tại'),
+  cannotSignIn: new CustomError('cannotSignIn', 'Tên đăng nhập hoặc mật khẩu không đúng'),
+  findNotFoundUser: new CustomError('findNotFoundUser', 'Không tìm thấy người dùng'),
   notHaveRole: new CustomError('notHaveRole', 'not have role'),
 };
