@@ -19,7 +19,7 @@ export class EmailService {
     const mailOptions = {
       from: process.env.FROM_EMAIL,
       to,
-      subject,
+      subject: `[wnc-2324] ${subject}`,
       text,
     };
 

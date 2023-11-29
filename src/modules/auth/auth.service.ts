@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { RegisterDto } from './dtos/auth.dto';
+import { ForgotAccountDto, RegisterDto } from './dtos/auth.dto';
 import { User } from '../users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
@@ -93,6 +93,33 @@ export class AuthService {
       );
       if (!userUpdate) throw Errors.verifyFailed;
     });
+    return true;
+  };
+
+  public forgotAccount = async (params: ForgotAccountDto) => {
+    const { email } = params;
+    const user = await this.usersService.findOne(email);
+    if (!user) {
+      throw Errors.findNotFoundUser;
+    }
+    if (!user.isActive) {
+      throw Errors.notActiveUser;
+    }
+    const newPass = uuidv4().slice(0, 8);
+    const hashPass = await hashPassword(newPass);
+    // save db
+    await AppDataSource.transaction(async (transaction) => {
+      const userUpdate = await transaction.update(
+        User,
+        { userId: user.userId },
+        {
+          password: hashPass,
+        },
+      );
+      if (!userUpdate) throw Errors.badRequest;
+    });
+    // send email
+    await this.emailService.sendEmail(email, 'New password', newPass);
     return true;
   };
 }

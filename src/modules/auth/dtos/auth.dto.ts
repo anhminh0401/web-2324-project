@@ -8,3 +8,7 @@ export class RegisterDto {
   password: string;
   fullname: string;
 }
+
+export class ForgotAccountDto {
+  email: string;
+}

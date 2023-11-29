@@ -10,7 +10,7 @@ import {
   Param,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto, SignInDto } from './dtos/auth.dto';
+import { ForgotAccountDto, RegisterDto, SignInDto } from './dtos/auth.dto';
 import { Response } from 'express';
 import { ResponseWrapper } from '../../helper/response-wrapper';
 import { LocalAuthGuard } from './local-auth.guard';
@@ -40,6 +40,15 @@ export class AuthController {
   @Get('active/:uuid')
   async activeAccount(@Param('uuid') uuid: string, @Res() res: Response) {
     const data = await this.authService.activeAccount(uuid);
+    res.send(new ResponseWrapper(data, null, null));
+  }
+
+  @Post('forgot')
+  async forgotAccount(
+    @Body() forgotAccountDto: ForgotAccountDto,
+    @Res() res: Response,
+  ) {
+    const data = await this.authService.forgotAccount(forgotAccountDto);
     res.send(new ResponseWrapper(data, null, null));
   }
 }
