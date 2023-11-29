@@ -12,12 +12,13 @@ import { UsersService } from './users.service';
 import { InfoProfileRequest } from './dtos/profile.dto';
 import { Response } from 'express';
 import { ResponseWrapper } from '../../helper/response-wrapper';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-@Controller('users')
+@Controller('user')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getProfile(@Request() req, @Res() res: Response) {
     const data = await this.usersService.getProfile(req.user.userId);

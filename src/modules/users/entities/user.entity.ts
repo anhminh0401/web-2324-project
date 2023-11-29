@@ -13,7 +13,7 @@ export class User extends BaseColumnEntity {
     collation: 'utf8mb4_general_ci',
     unique: true,
   })
-  username: string;
+  email: string;
 
   @Column({
     type: 'varchar',
@@ -30,4 +30,15 @@ export class User extends BaseColumnEntity {
     collation: 'utf8mb4_general_ci',
   })
   fullname: string;
+
+  @Column({
+    type: 'varchar',
+    length: 125,
+    charset: 'utf8mb4',
+    collation: 'utf8mb4_general_ci',
+  })
+  uuid: string;
+
+  @Column({ type: 'boolean', default: false })
+  isActive: boolean;
 }
