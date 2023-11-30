@@ -7,8 +7,8 @@ import { AppDataSource } from '../../database/connect-database';
 
 @Injectable()
 export class UsersService {
-  public findOne = async (username: string): Promise<User | undefined> => {
-    return User.findOne({ where: { username: username } });
+  public findOne = async (email: string): Promise<User | undefined> => {
+    return User.findOne({ where: { email: email } });
   };
 
   public getProfile = async (userId: number) => {
