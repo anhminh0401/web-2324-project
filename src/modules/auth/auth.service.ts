@@ -42,11 +42,9 @@ export class AuthService {
 
     const payload = { userId: user.userId, email: user.email };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = user;
-    result['access_token'] = await this.jwtService.signAsync(payload);
-    return {
-      ...result,
-    };
+    user['access_token'] = await this.jwtService.signAsync(payload);
+    const result = InfoUserResponse.fromDatabase(user);
+    return result;
   }
 
   public register = async (params: RegisterDto) => {
