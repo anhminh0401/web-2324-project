@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { ForgotAccountDto, RegisterDto } from './dtos/auth.dto';
+import {
+  ChangePasswordDto,
+  ForgotAccountDto,
+  GoogleLoginDto,
+  RegisterDto,
+} from './dtos/auth.dto';
 import { User } from '../users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
@@ -9,6 +14,8 @@ import { Errors } from '../../helper/errors';
 import { hashPassword } from '../../helper/utils';
 import { AppDataSource } from '../../database/connect-database';
 import { EmailService } from '../mail/email.service';
+import { UserAdvance } from '../users/entities/user-advance.entity';
+import { InfoUserResponse } from './dtos/info-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -46,10 +53,6 @@ export class AuthService {
     const { email, password, fullname } = params;
     // find username
     const user = await this.usersService.findOne(email);
-    console.log(
-      '🚀 ~ file: auth.service.ts:42 ~ AuthService ~ register= ~ user:',
-      user,
-    );
     if (user) {
       throw Errors.existUsername;
     }
@@ -73,7 +76,6 @@ export class AuthService {
   };
 
   public activeAccount = async (uuid: string) => {
-    console.log(' uuid', uuid);
     const user = await User.findOne({
       where: {
         uuid: uuid,
@@ -121,5 +123,74 @@ export class AuthService {
     // send email
     await this.emailService.sendEmail(email, 'New password', newPass);
     return true;
+  };
+
+  public changePassword = async (params: ChangePasswordDto, userId: number) => {
+    const { password, newPassword } = params;
+    const user = await User.findOne({ where: { userId: userId } });
+    if (!user) Errors.findNotFoundUser;
+    if (!user.isActive) Errors.notActiveUser;
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw Errors.incorrectPassword;
+    }
+
+    const hashPass = await hashPassword(newPassword);
+
+    await AppDataSource.transaction(async (transaction) => {
+      const userUpdate = await transaction.update(
+        User,
+        { userId: user.userId },
+        {
+          password: hashPass,
+        },
+      );
+      if (!userUpdate) throw Errors.badRequest;
+    });
+    return true;
+  };
+
+  public googleLogin = async (user: GoogleLoginDto) => {
+    if (!user) {
+      throw Errors.cannotSignIn;
+    }
+
+    const findUser = await User.findOne({
+      where: {
+        email: user.email,
+      },
+    });
+    let userResult: User = findUser;
+    if (findUser) {
+      await AppDataSource.transaction(async (transaction) => {
+        const userUpdate = await transaction.save(UserAdvance, {
+          userId: findUser.userId,
+          avatar: user.avatar,
+        });
+        if (!userUpdate) throw Errors.badRequest;
+      });
+    } else {
+      await AppDataSource.transaction(async (transaction) => {
+        const userUpdate = await transaction.save(User, {
+          email: user.email,
+          uuid: uuidv4(),
+          isActive: true,
+          fullname: user.displayName,
+        });
+        if (!userUpdate) throw Errors.badRequest;
+
+        const userAdvance = await transaction.save(UserAdvance, {
+          userId: userUpdate.userId,
+          avatar: user.avatar,
+        });
+        if (!userAdvance) throw Errors.badRequest;
+        userResult = userUpdate;
+      });
+    }
+
+    const payload = { userId: userResult.userId, email: userResult.email };
+    userResult['access_token'] = await this.jwtService.signAsync(payload);
+    const result = InfoUserResponse.fromDatabase(userResult);
+    return result;
   };
 }

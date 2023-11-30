@@ -34,4 +34,8 @@ export const Errors = {
   ),
   verifyFailed: new CustomError('verifyFailed', 'Xác thực thất bại'),
   activeAccount: new CustomError('activeAccount', 'Tài khoản đã được xác thực'),
+  incorrectPassword: new CustomError(
+    'incorrectPassword',
+    'Mật khẩu không đúng',
+  ),
 };
