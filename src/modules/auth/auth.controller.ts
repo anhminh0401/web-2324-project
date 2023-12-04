@@ -22,6 +22,7 @@ import { ResponseWrapper } from '../../helper/response-wrapper';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
+import url from 'url';
 
 @Controller('auth')
 export class AuthController {
@@ -82,7 +83,7 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req, @Res() res) {
-    const data = await this.authService.googleLogin(req.user);
-    res.send(new ResponseWrapper(data, null, null));
+    const data: any = await this.authService.googleLogin(req.user);
+    res.redirect(`${process.env.CLIENT_URL}/auth/google?token=${data.access_token}&email=${data.email}&fullname=${data.fullname}&userId=${data.userId}`);
   }
 }
