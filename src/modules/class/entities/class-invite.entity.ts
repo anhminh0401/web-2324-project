@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 import { BaseColumnEntity } from '../../base/base.entity';
 
 @Entity()
-export class ClassTeacher extends BaseColumnEntity {
+export class ClassInvite extends BaseColumnEntity {
   @PrimaryColumn({ type: 'int' })
   classId: number;
 
@@ -19,4 +19,7 @@ export class ClassTeacher extends BaseColumnEntity {
     default: false,
   })
   status: boolean;
+
+  @Column({ type: 'int' })
+  role: number;
 }

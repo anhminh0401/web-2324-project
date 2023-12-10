@@ -5,3 +5,9 @@ export class CreateClassDto {
   room?: string;
   creatorId?: number;
 }
+
+export class InviteByEmailDto {
+  classId: number;
+  email: string;
+  role: 'student' | 'teacher';
+}
