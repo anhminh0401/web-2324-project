@@ -16,6 +16,9 @@ import { AppDataSource } from '../../database/connect-database';
 import { EmailService } from '../mail/email.service';
 import { UserAdvance } from '../users/entities/user-advance.entity';
 import { InfoUserResponse } from './dtos/info-user.dto';
+import { ClassInvite } from '../class/entities/class-invite.entity';
+import { ClassTeacher } from '../class/entities/class-teacher.entity';
+import { ClassStudent } from '../class/entities/class-student.entity';
 
 @Injectable()
 export class AuthService {
@@ -93,6 +96,7 @@ export class AuthService {
       );
       if (!userUpdate) throw Errors.verifyFailed;
     });
+    await this.addClassOfUser(user.email);
     return true;
   };
 
@@ -184,11 +188,44 @@ export class AuthService {
         if (!userAdvance) throw Errors.badRequest;
         userResult = userUpdate;
       });
+      await this.addClassOfUser(user.email);
     }
 
     const payload = { userId: userResult.userId, email: userResult.email };
     userResult['access_token'] = await this.jwtService.signAsync(payload);
     const result = InfoUserResponse.fromDatabase(userResult);
     return result;
+  };
+
+  private addClassOfUser = async (email: string) => {
+    const listClassOfUser = await ClassInvite.find({
+      where: {
+        email: email,
+        status: true,
+      },
+    });
+    console.log(
+      '🚀 ~ file: auth.service.ts:207 ~ AuthService ~ addClassOfUser= ~ listClassOfUser:',
+      listClassOfUser,
+    );
+    for (const classInfo of listClassOfUser) {
+      if (classInfo.role === 2) {
+        await AppDataSource.transaction(async (transaction) => {
+          await transaction.update(
+            ClassTeacher,
+            { classId: classInfo.classId, email: email },
+            { status: true },
+          );
+        });
+      } else if (classInfo.role === 1) {
+        await AppDataSource.transaction(async (transaction) => {
+          await transaction.update(
+            ClassStudent,
+            { classId: classInfo.classId, email: email },
+            { status: true },
+          );
+        });
+      }
+    }
   };
 }

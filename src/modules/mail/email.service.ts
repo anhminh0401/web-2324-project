@@ -25,4 +25,19 @@ export class EmailService {
 
     await this.transporter.sendMail(mailOptions);
   }
+
+  async sendConfirmationEmail(
+    email: string,
+    classId: number,
+    role: 'student' | 'teacher',
+  ): Promise<void> {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL,
+      to: email,
+      subject: 'Invite to join the class',
+      html: `<p>Xác nhận đồng ý <a href="${process.env.BASE_URL}/class/confirm?email=${email}&classId=${classId}&role=${role}">Tại đây</a></p>`,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
 }

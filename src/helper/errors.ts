@@ -38,4 +38,8 @@ export const Errors = {
     'incorrectPassword',
     'Mật khẩu không đúng',
   ),
+  findNotFoundClass: new CustomError(
+    'findNotFoundClass',
+    'Không tìm thấy lớp học',
+  ),
 };
