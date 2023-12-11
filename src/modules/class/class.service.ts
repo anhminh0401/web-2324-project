@@ -1,13 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { AppDataSource } from '../../database/connect-database';
 import { Class } from './entities/class.entity';
-import { CreateClassDto, InviteByEmailDto } from './dtos/class-request.dto';
+import {
+  CreateClassDto,
+  GetParticipantsDto,
+  InfoClassDto,
+  InfoParticipantsDto,
+  InviteByEmailDto,
+  InviteLinkDto,
+} from './dtos/class-request.dto';
 import { ClassTeacher } from './entities/class-teacher.entity';
 import { ClassStudent } from './entities/class-student.entity';
 import { Errors } from '../../helper/errors';
 import { User } from '../users/entities/user.entity';
 import { EmailService } from '../mail/email.service';
 import { ClassInvite } from './entities/class-invite.entity';
+import { callProcedure } from '../../database/call-store-procedure';
 
 @Injectable()
 export class ClassService {
@@ -32,31 +40,55 @@ export class ClassService {
 
   public getClassOfUser = async (userId: number) => {
     const userInfo = await User.findOne({ where: { userId: userId } });
-    const classTeach = await ClassTeacher.find({
-      where: { email: userInfo.email, status: true },
-    });
-    const classJoin = await ClassStudent.find({
-      where: { email: userInfo.email, status: true },
-    });
+    const classTeach = await callProcedure<InfoClassDto[]>(
+      'GetClassTeach',
+      [userInfo.email],
+      InfoClassDto,
+    );
+    const classJoin = await callProcedure<InfoClassDto[]>(
+      'GetClassJoin',
+      [userInfo.email],
+      InfoClassDto,
+    );
+    // const classTeach = await ClassTeacher.find({
+    //   where: { email: userInfo.email, status: true },
+    // });
+    // const classJoin = await ClassStudent.find({
+    //   where: { email: userInfo.email, status: true },
+    // });
     return { teach: classTeach, join: classJoin };
   };
 
-  public getTeachersAndStudents = async (classId: number) => {
+  public getTeachersAndStudents = async (
+    getParticipantsDto: GetParticipantsDto,
+  ) => {
+    const { classId } = getParticipantsDto;
     if (!classId) Errors.findNotFoundClass;
     const classInfo = await Class.findOne({ where: { classId: classId } });
     if (!classInfo) Errors.findNotFoundClass;
-    const teachers = await ClassTeacher.find({ where: { classId: classId } });
-    const students = await ClassStudent.find({ where: { classId: classId } });
+    const teachers = await callProcedure<InfoParticipantsDto[]>(
+      'GetClassTeacher',
+      [classId],
+      InfoParticipantsDto,
+    );
+
+    const students = await callProcedure<InfoParticipantsDto[]>(
+      'GetClassStudent',
+      [classId],
+      InfoParticipantsDto,
+    );
+
     return { teachers, students };
   };
 
-  public inviteByLink = async (classId: number, userId: number) => {
+  public inviteByLink = async (params: InviteLinkDto, email: string) => {
+    const { classId } = params;
     const classInfo = await Class.findOne({ where: { classId: classId } });
     if (!classInfo) Errors.findNotFoundClass;
     await AppDataSource.transaction(async (transaction) => {
       await transaction.save(ClassStudent, {
         classId: classId,
-        studentId: userId,
+        email: email,
         status: true,
       });
     });
