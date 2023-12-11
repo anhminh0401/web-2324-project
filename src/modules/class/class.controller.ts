@@ -10,7 +10,12 @@ import {
 import { Response } from 'express';
 import { ClassService } from './class.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CreateClassDto, InviteByEmailDto } from './dtos/class-request.dto';
+import {
+  CreateClassDto,
+  GetParticipantsDto,
+  InviteByEmailDto,
+  InviteLinkDto,
+} from './dtos/class-request.dto';
 import { ResponseWrapper } from '../../helper/response-wrapper';
 
 @Controller('class')
@@ -42,22 +47,26 @@ export class ClassController {
   @UseGuards(JwtAuthGuard)
   @Get('participants')
   async getTeachersAndStudentsOfClass(
-    @Body() classId: number,
+    @Body() getParticipantsDto: GetParticipantsDto,
     @Req() req,
     @Res() res: Response,
   ) {
-    const data = await this.classService.getTeachersAndStudents(classId);
+    const data =
+      await this.classService.getTeachersAndStudents(getParticipantsDto);
     res.send(new ResponseWrapper(data, null, null));
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('invite/link')
   async inviteByLink(
-    @Body() classId: number,
+    @Body() inviteLinkDto: InviteLinkDto,
     @Req() req,
     @Res() res: Response,
   ) {
-    const data = await this.classService.inviteByLink(classId, req.user.userId);
+    const data = await this.classService.inviteByLink(
+      inviteLinkDto,
+      req.user.email,
+    );
     res.send(new ResponseWrapper(data, null, null));
   }
 
