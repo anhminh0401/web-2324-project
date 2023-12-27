@@ -6,24 +6,25 @@ export class CreateClassDto {
   topic?: string;
   room?: string;
   creatorId?: number;
+  classId?: string;
 }
 
 export class InviteByEmailDto {
-  classId: number;
+  classId: string;
   email: string;
   role: 'student' | 'teacher';
 }
 
 export class GetParticipantsDto {
-  classId: number;
+  classId: string;
 }
 
 export class InviteLinkDto {
-  classId: number;
+  classId: string;
 }
 export class InfoParticipantsDto {
   @Expose()
-  classId: number;
+  classId: string;
   @Expose()
   userId: number;
   @Expose()
@@ -44,7 +45,7 @@ export class InfoParticipantsDto {
 
 export class InfoClassDto {
   @Expose()
-  classId: number;
+  classId: string;
   @Expose()
   name: string;
   @Expose()

@@ -28,7 +28,7 @@ export class EmailService {
 
   async sendConfirmationEmail(
     email: string,
-    classId: number,
+    classId: string,
     role: 'student' | 'teacher',
   ): Promise<void> {
     const mailOptions = {

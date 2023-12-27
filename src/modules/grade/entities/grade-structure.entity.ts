@@ -1,9 +1,12 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseColumnEntity } from '../../base/base.entity';
 
 @Entity()
-export class ClassTeacher extends BaseColumnEntity {
-  @PrimaryColumn({
+export class GradeStructure extends BaseColumnEntity {
+  @PrimaryGeneratedColumn({ type: 'int' })
+  gradeId: number;
+
+  @Column({
     type: 'varchar',
     length: 32,
     charset: 'utf8mb4',
@@ -11,17 +14,14 @@ export class ClassTeacher extends BaseColumnEntity {
   })
   classId: string;
 
-  @PrimaryColumn({
+  @Column({
     type: 'varchar',
     length: 125,
     charset: 'utf8mb4',
     collation: 'utf8mb4_general_ci',
   })
-  email: string;
+  gradeName: string;
 
-  @Column({
-    type: 'boolean',
-    default: false,
-  })
-  status: boolean;
+  @Column({ type: 'int' })
+  gradeScale: number;
 }
