@@ -8,9 +8,10 @@ import { CustomExceptionFilter } from './modules/middlewares/error-handle.middle
 import { EmailModule } from './modules/mail/email.module';
 import { AppMiddleware } from './modules/middlewares/base-url.middleware';
 import { ClassModule } from './modules/class/class.module';
+import { GradeModule } from './modules/grade/grade.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, EmailModule, ClassModule],
+  imports: [AuthModule, UsersModule, EmailModule, ClassModule, GradeModule],
   controllers: [AppController],
   providers: [
     AppService,

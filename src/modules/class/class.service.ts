@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 import { AppDataSource } from '../../database/connect-database';
 import { Class } from './entities/class.entity';
 import {
@@ -28,6 +29,7 @@ export class ClassService {
   ) => {
     await AppDataSource.transaction(async (transaction) => {
       params.creatorId = userId;
+      params.classId = uuidv4();
       const classInfo = await transaction.save(Class, params);
       await transaction.save(ClassTeacher, {
         classId: classInfo.classId,
@@ -50,12 +52,6 @@ export class ClassService {
       [userInfo.email],
       InfoClassDto,
     );
-    // const classTeach = await ClassTeacher.find({
-    //   where: { email: userInfo.email, status: true },
-    // });
-    // const classJoin = await ClassStudent.find({
-    //   where: { email: userInfo.email, status: true },
-    // });
     return { teach: classTeach, join: classJoin };
   };
 
