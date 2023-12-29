@@ -42,4 +42,9 @@ export const Errors = {
     'findNotFoundClass',
     'Không tìm thấy lớp học',
   ),
+  cannotMapMSSV: new CustomError(
+    'cannotMapMSSV',
+    'Không thể map mã số sinh viên',
+  ),
+  existMSSV: new CustomError('existMSSV', 'Mã số sinh viên đã tồn tại'),
 };

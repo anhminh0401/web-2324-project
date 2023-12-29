@@ -40,3 +40,7 @@ export class InfoProfileResponse {
     });
   };
 }
+
+export class InfoMssvRequest {
+  mssv: string;
+}

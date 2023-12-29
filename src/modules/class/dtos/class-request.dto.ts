@@ -35,6 +35,8 @@ export class InfoParticipantsDto {
   uuid: string;
   @Expose()
   status: boolean;
+  @Expose()
+  mssv: string;
 
   static fromDatabase = (data) => {
     return plainToInstance(InfoParticipantsDto, data, {
@@ -61,6 +63,18 @@ export class InfoClassDto {
 
   static fromDatabase = (data) => {
     return plainToInstance(InfoClassDto, data, {
+      excludeExtraneousValues: true,
+    });
+  };
+}
+
+export class InfoStudentsExportDto {
+  fullname: string;
+  @Expose()
+  mssv: string;
+
+  static fromDatabase = (data) => {
+    return plainToInstance(InfoStudentsExportDto, data, {
       excludeExtraneousValues: true,
     });
   };

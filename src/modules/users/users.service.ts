@@ -46,4 +46,15 @@ export class UsersService {
     });
     return true;
   };
+
+  public mapMSSV = async (userId: number, mssv: string) => {
+    const user = await User.findOne({ where: { userId: userId } });
+    if (!user || user.mssv !== null) throw Errors.cannotMapMSSV;
+    const isMssv = await User.findOne({ where: { mssv: mssv } });
+    if (isMssv) throw Errors.existMSSV;
+    await AppDataSource.transaction(async (transaction) => {
+      await transaction.update(User, { userId: userId }, { mssv: mssv });
+    });
+    return true;
+  };
 }

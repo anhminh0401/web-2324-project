@@ -10,6 +10,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import * as fs from 'fs';
 import { GradeService } from './grade.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Response } from 'express';
@@ -64,5 +65,49 @@ export class GradeController {
     res.send(new ResponseWrapper(data, null, null));
   }
 
-  
+  @UseGuards(JwtAuthGuard)
+  @Get('export-csv/:classId')
+  async exportCsv(@Param('classId') classId: string, @Res() res: Response) {
+    try {
+      const filePath = await this.gradeService.exportCsv(classId);
+
+      // Gửi file về client
+      res.download(filePath, 'student-list.csv', (err) => {
+        if (err) {
+          console.error('Error downloading CSV file:', err);
+          res.status(500).send('Internal Server Error');
+        } else {
+          // Xóa file sau khi đã gửi về client (tuỳ chọn)
+          fs.unlinkSync(filePath);
+          console.log('CSV file has been sent and deleted successfully');
+        }
+      });
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('export-xlsx/:classId')
+  async exportXlsx(@Param('classId') classId: string, @Res() res: Response) {
+    try {
+      const filePath = await this.gradeService.exportXlsx(classId);
+
+      // Gửi file về client
+      res.download(filePath, 'student-list.xlsx', (err) => {
+        if (err) {
+          console.error('Error downloading XLSX file:', err);
+          res.status(500).send('Internal Server Error');
+        } else {
+          // Xóa file sau khi đã gửi về client (tuỳ chọn)
+          fs.unlinkSync(filePath);
+          console.log('XLSX file has been sent and deleted successfully');
+        }
+      });
+    } catch (error) {
+      console.error('Error exporting XLSX:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  }
 }
