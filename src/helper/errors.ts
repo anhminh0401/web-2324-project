@@ -47,4 +47,10 @@ export const Errors = {
     'Không thể map mã số sinh viên',
   ),
   existMSSV: new CustomError('existMSSV', 'Mã số sinh viên đã tồn tại'),
+  cannotMark: new CustomError('cannotMark', 'Không thể chấm điểm'),
+  cannotImportAssignment: new CustomError(
+    'cannotImportAssignment',
+    'Không tìm thấy cột điểm để import',
+  ),
+  joinedClass: new CustomError('joinedClass', 'Đã tham gia lớp học này'),
 };

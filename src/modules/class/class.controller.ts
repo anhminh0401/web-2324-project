@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Req,
   Res,
@@ -83,15 +84,26 @@ export class ClassController {
 
   @Get('confirm')
   async confirmInviteByEmail(@Req() req, @Res() res: Response) {
-    console.log(
-      '🚀 ~ file: class.controller.ts:80 ~ ClassController ~  req.params:',
-      req.query,
-    );
     await this.classService.confirmInviteByEmail(
       req.query.email,
       req.query.classId,
       req.query.role,
     );
     res.redirect(`${process.env.CLIENT_URL}`);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/role/:classId')
+  async checkRole(
+    @Param('classId') classId: string,
+    @Req() req,
+    @Res() res: Response,
+  ) {
+    const data = await this.classService.checkRole(
+      req.user.userId,
+      req.user.email,
+      classId,
+    );
+    res.send(new ResponseWrapper(data, null, null));
   }
 }
