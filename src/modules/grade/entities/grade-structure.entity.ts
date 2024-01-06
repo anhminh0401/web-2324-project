@@ -24,4 +24,10 @@ export class GradeStructure extends BaseColumnEntity {
 
   @Column({ type: 'int' })
   gradeScale: number;
+
+  @Column({ type: 'int', default: 0 })
+  gradeParent: number;
+
+  @Column({ type: 'boolean', default: false })
+  isView: boolean;
 }

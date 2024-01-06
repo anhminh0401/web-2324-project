@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { UsersService } from './users.service';
-import { InfoProfileRequest } from './dtos/profile.dto';
+import { InfoMssvRequest, InfoProfileRequest } from './dtos/profile.dto';
 import { Response } from 'express';
 import { ResponseWrapper } from '../../helper/response-wrapper';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -33,6 +33,17 @@ export class UsersController {
     @Res() res: Response,
   ) {
     const data = await this.usersService.editProfile(req.user.userId, info);
+    res.send(new ResponseWrapper(data, null, null));
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('map-mssv')
+  async mapMSSV(
+    @Body() info: InfoMssvRequest,
+    @Request() req,
+    @Res() res: Response,
+  ) {
+    const data = await this.usersService.mapMSSV(req.user.userId, info.mssv);
     res.send(new ResponseWrapper(data, null, null));
   }
 }

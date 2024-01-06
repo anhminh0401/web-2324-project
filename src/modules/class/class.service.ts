@@ -80,7 +80,11 @@ export class ClassService {
   public inviteByLink = async (params: InviteLinkDto, email: string) => {
     const { classId } = params;
     const classInfo = await Class.findOne({ where: { classId: classId } });
-    if (!classInfo) Errors.findNotFoundClass;
+    if (!classInfo) throw Errors.findNotFoundClass;
+    const checkStudent = await ClassStudent.findOne({
+      where: { email: email },
+    });
+    if (checkStudent) throw Errors.joinedClass;
     await AppDataSource.transaction(async (transaction) => {
       await transaction.save(ClassStudent, {
         classId: classId,
@@ -173,5 +177,25 @@ export class ClassService {
       });
     }
     return true;
+  };
+
+  public checkRole = async (
+    userId: number,
+    email: string,
+    classId: string,
+  ): Promise<'owner' | 'teacher' | 'student'> => {
+    const checkOwner = await Class.findOne({
+      where: { classId: classId, creatorId: userId },
+    });
+    if (checkOwner) return 'owner';
+    const checkTeacher = await ClassTeacher.findOne({
+      where: { classId: classId, email: email },
+    });
+    if (checkTeacher) return 'teacher';
+    const checkStudent = await ClassStudent.findOne({
+      where: { classId: classId, email: email },
+    });
+    if (checkStudent) return 'student';
+    throw Errors.notHaveRole;
   };
 }

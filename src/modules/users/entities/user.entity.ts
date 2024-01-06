@@ -42,4 +42,13 @@ export class User extends BaseColumnEntity {
 
   @Column({ type: 'boolean', default: false })
   isActive: boolean;
+
+  @Column({
+    type: 'varchar',
+    length: 16,
+    charset: 'utf8mb4',
+    collation: 'utf8mb4_general_ci',
+    default: null,
+  })
+  mssv: string;
 }
