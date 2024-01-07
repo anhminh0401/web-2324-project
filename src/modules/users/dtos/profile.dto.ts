@@ -2,7 +2,6 @@ import { Expose, plainToInstance } from 'class-transformer';
 
 export class InfoProfileRequest {
   fullname: string;
-  email: string;
   address: string;
   dob: Date;
   avatar: string;

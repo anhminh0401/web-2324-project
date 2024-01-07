@@ -9,9 +9,17 @@ import { EmailModule } from './modules/mail/email.module';
 import { AppMiddleware } from './modules/middlewares/base-url.middleware';
 import { ClassModule } from './modules/class/class.module';
 import { GradeModule } from './modules/grade/grade.module';
+import { GradeReviewModule } from './modules/grade-review/grade-review.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, EmailModule, ClassModule, GradeModule],
+  imports: [
+    AuthModule,
+    UsersModule,
+    EmailModule,
+    ClassModule,
+    GradeModule,
+    GradeReviewModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,

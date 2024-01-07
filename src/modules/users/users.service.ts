@@ -44,7 +44,7 @@ export class UsersService {
         ...infoUserAdvance,
       });
     });
-    return true;
+    return this.getProfile(userId);
   };
 
   public mapMSSV = async (userId: number, mssv: string) => {
