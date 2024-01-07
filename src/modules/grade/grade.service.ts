@@ -27,10 +27,14 @@ import {
   StructureGradeResDto,
 } from './dtos/grade-response.dto';
 import { User } from '../users/entities/user.entity';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class GradeService {
-  constructor(private classService: ClassService) {}
+  constructor(
+    private classService: ClassService,
+    private notiService: NotificationService,
+  ) {}
 
   public addColumn = async (gradeColumnInfo: GradeColumnInfo) => {
     await AppDataSource.transaction(async (transaction) => {
@@ -512,6 +516,15 @@ export class GradeService {
         { gradeId: gradeId },
         { isView: true },
       );
+    });
+    // create noti
+    const gradeStruc = await GradeStructure.findOne({
+      where: { gradeId: gradeId },
+    });
+    await this.notiService.createNoti({
+      type: 'grade finalized',
+      classId: gradeStruc.classId,
+      gradeId: gradeStruc.gradeId,
     });
     return true;
   };

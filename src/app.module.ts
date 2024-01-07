@@ -10,6 +10,7 @@ import { AppMiddleware } from './modules/middlewares/base-url.middleware';
 import { ClassModule } from './modules/class/class.module';
 import { GradeModule } from './modules/grade/grade.module';
 import { GradeReviewModule } from './modules/grade-review/grade-review.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { GradeReviewModule } from './modules/grade-review/grade-review.module';
     ClassModule,
     GradeModule,
     GradeReviewModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

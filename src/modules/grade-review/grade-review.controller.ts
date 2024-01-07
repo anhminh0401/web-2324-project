@@ -71,6 +71,7 @@ export class GradeReviewController {
   ) {
     const data = await this.gradeReviewService.commentReview(
       req.user.userId,
+      req.user.email,
       infoComment,
     );
     res.send(new ResponseWrapper(data, null, null));
