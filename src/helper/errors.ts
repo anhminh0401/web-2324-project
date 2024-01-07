@@ -53,4 +53,8 @@ export const Errors = {
     'Không tìm thấy cột điểm để import',
   ),
   joinedClass: new CustomError('joinedClass', 'Đã tham gia lớp học này'),
+  findNotFoundReview: new CustomError(
+    'findNotFoundReview',
+    'Không tìm thấy review',
+  ),
 };
