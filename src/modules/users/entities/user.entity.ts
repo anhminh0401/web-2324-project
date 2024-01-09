@@ -51,4 +51,10 @@ export class User extends BaseColumnEntity {
     default: null,
   })
   mssv: string;
+
+  @Column({ type: 'boolean', default: false })
+  isAdmin: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  isLock: boolean;
 }

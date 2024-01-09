@@ -48,4 +48,7 @@ export class Class extends BaseColumnEntity {
 
   @Column({ type: 'int' })
   creatorId: number;
+
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
 }

@@ -7,6 +7,8 @@ import { ClassStudent } from '../class/entities/class-student.entity';
 import { ClassTeacher } from '../class/entities/class-teacher.entity';
 import { GradeReview } from '../grade-review/entities/grade-review.entity';
 import { UserNoti } from './entities/user-noti.entity';
+import { InfoNotiResponseDto } from './dtos/noti-response.dto';
+import { callProcedure } from '../../database/call-store-procedure';
 
 @Injectable()
 export class NotificationService {
@@ -65,7 +67,11 @@ export class NotificationService {
   };
 
   public getListNoti = async (email: string) => {
-    const listNoti = await UserNoti.find({ where: { email: email } });
+    const listNoti = await callProcedure<InfoNotiResponseDto[]>(
+      'GetListNoti',
+      [email],
+      InfoNotiResponseDto,
+    );
     return listNoti;
   };
 
