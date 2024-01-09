@@ -47,8 +47,8 @@ export class AuthController {
 
   @Get('active/:uuid')
   async activeAccount(@Param('uuid') uuid: string, @Res() res: Response) {
-    const data = await this.authService.activeAccount(uuid);
-    res.send(new ResponseWrapper(data, null, null));
+    await this.authService.activeAccount(uuid);
+    res.redirect(`${process.env.CLIENT_URL}`);
   }
 
   @Post('forgot-password')
@@ -83,6 +83,8 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req, @Res() res) {
     const data: any = await this.authService.googleLogin(req.user);
-    res.redirect(`${process.env.CLIENT_URL}/auth/google?access_token=${data.access_token}&email=${data.email}&fullname=${data.fullname}&userId=${data.userId}`);
+    res.redirect(
+      `${process.env.CLIENT_URL}/auth/google?access_token=${data.access_token}&email=${data.email}&fullname=${data.fullname}&userId=${data.userId}`,
+    );
   }
 }

@@ -13,10 +13,16 @@ import {
   InfoListCommentDto,
   InfoListReviewDto,
 } from './dtos/review-response.dto';
+import { NotificationService } from '../notification/notification.service';
+import { GradeStructure } from '../grade/entities/grade-structure.entity';
+import { Errors } from '../../helper/errors';
 
 @Injectable()
 export class GradeReivewService {
-  constructor(private classService: ClassService) {}
+  constructor(
+    private classService: ClassService,
+    private notiService: NotificationService,
+  ) {}
 
   public createReview = async (
     userId: number,
@@ -24,8 +30,19 @@ export class GradeReivewService {
     infoReivew: InfoReviewRequestDto,
   ) => {
     await AppDataSource.transaction(async (transaction) => {
-      await transaction.insert(GradeReview, infoReivew);
+      const check = await GradeStructure.findOne({
+        where: { gradeId: infoReivew.gradeId },
+      });
+      if (!check || !check.isView) throw Errors.cannotCreateReview;
+      const gradeReview = await transaction.save(GradeReview, infoReivew);
+      await this.notiService.createNoti({
+        type: 'have review',
+        classId: infoReivew.classId,
+        gradeId: infoReivew.gradeId,
+        reviewId: gradeReview.reviewId,
+      });
     });
+
     return await this.viewListReview(userId, email, infoReivew.classId);
   };
 
@@ -37,7 +54,7 @@ export class GradeReivewService {
     const role = await this.classService.checkRole(userId, email, classId);
     if (role !== 'student') userId = 0;
     const reviews = await callProcedure<InfoListReviewDto[]>(
-      'GetReviewByTeacher',
+      'GetListReview',
       [classId, userId],
       InfoListReviewDto,
     );
@@ -56,14 +73,32 @@ export class GradeReivewService {
 
   public commentReview = async (
     userId: number,
+    email: string,
     infoComment: InfoCommentRequestDto,
   ) => {
+    // save cmt
     await AppDataSource.transaction(async (transaction) => {
       await transaction.save(ReviewComment, {
         userId: userId,
         reviewId: infoComment.reviewId,
         message: infoComment.message,
       });
+    });
+    // create noti
+    const review = await GradeReview.findOne({
+      where: { reviewId: infoComment.reviewId },
+    });
+    const role = await this.classService.checkRole(
+      userId,
+      email,
+      review.classId,
+    );
+    await this.notiService.createNoti({
+      type: 'reply to review',
+      classId: review.classId,
+      gradeId: review.gradeId,
+      reviewId: infoComment.reviewId,
+      role: role,
     });
     return true;
   };
@@ -84,6 +119,17 @@ export class GradeReivewService {
         { reviewId: reviewId },
         { isClose: true },
       );
+    });
+
+    // create noti
+    const review = await GradeReview.findOne({
+      where: { reviewId: reviewId },
+    });
+    await this.notiService.createNoti({
+      type: 'mark review',
+      classId: review.classId,
+      gradeId: review.gradeId,
+      reviewId: reviewId,
     });
     return true;
   };

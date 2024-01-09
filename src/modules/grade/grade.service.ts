@@ -27,10 +27,14 @@ import {
   StructureGradeResDto,
 } from './dtos/grade-response.dto';
 import { User } from '../users/entities/user.entity';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class GradeService {
-  constructor(private classService: ClassService) {}
+  constructor(
+    private classService: ClassService,
+    private notiService: NotificationService,
+  ) {}
 
   public addColumn = async (gradeColumnInfo: GradeColumnInfo) => {
     await AppDataSource.transaction(async (transaction) => {
@@ -202,11 +206,11 @@ export class GradeService {
         .on('end', async () => {
           await this.saveStudentsToDatabase(studentsData);
 
-          console.log('CSV file has been imported successfully');
+          return true;
         });
     } catch (error) {
       console.error('Error importing CSV:', error);
-      throw new Error('Error importing CSV');
+      throw Errors.badRequest;
     }
   }
 
@@ -237,10 +241,6 @@ export class GradeService {
   }
 
   public markGrade = async (infoMarkGrade: InfoMarkGradeDto) => {
-    console.log(
-      '🚀 ~ file: grade.service.ts:165 ~ GradeService ~ markGrade= ~ infoMarkGrade:',
-      infoMarkGrade,
-    );
     const check = await GradeStructure.findOne({
       where: { classId: infoMarkGrade.classId, gradeId: infoMarkGrade.gradeId },
     });
@@ -306,11 +306,11 @@ export class GradeService {
         .on('end', async () => {
           await this.saveAssginmentToDatabase(assignmentData);
 
-          console.log('CSV file has been imported successfully');
+          return true;
         });
     } catch (error) {
       console.error('Error importing CSV:', error);
-      throw new Error('Error importing CSV');
+      throw Errors.badRequest;
     }
   }
 
@@ -512,6 +512,15 @@ export class GradeService {
         { gradeId: gradeId },
         { isView: true },
       );
+    });
+    // create noti
+    const gradeStruc = await GradeStructure.findOne({
+      where: { gradeId: gradeId },
+    });
+    await this.notiService.createNoti({
+      type: 'grade finalized',
+      classId: gradeStruc.classId,
+      gradeId: gradeStruc.gradeId,
     });
     return true;
   };

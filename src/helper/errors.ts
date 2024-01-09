@@ -57,4 +57,8 @@ export const Errors = {
     'findNotFoundReview',
     'Không tìm thấy review',
   ),
+  cannotCreateReview: new CustomError(
+    'cannotCreateReview',
+    'Không thể tạo review',
+  ),
 };

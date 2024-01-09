@@ -25,6 +25,7 @@ import {
   InfoStudentRealDto,
 } from './dtos/grade-request.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Errors } from '../../helper/errors';
 
 @Controller('grade')
 export class GradeController {
@@ -84,16 +85,15 @@ export class GradeController {
       res.download(filePath, 'student-list.csv', (err) => {
         if (err) {
           console.error('Error downloading CSV file:', err);
-          res.status(500).send('Internal Server Error');
+          throw Errors.badRequest;
         } else {
           // Xóa file sau khi đã gửi về client (tuỳ chọn)
           fs.unlinkSync(filePath);
-          console.log('CSV file has been sent and deleted successfully');
         }
       });
     } catch (error) {
       console.error('Error exporting CSV:', error);
-      res.status(500).send('Internal Server Error');
+      throw Errors.badRequest;
     }
   }
 
@@ -107,16 +107,15 @@ export class GradeController {
       res.download(filePath, 'student-list.xlsx', (err) => {
         if (err) {
           console.error('Error downloading XLSX file:', err);
-          res.status(500).send('Internal Server Error');
+          throw Errors.badRequest;
         } else {
           // Xóa file sau khi đã gửi về client (tuỳ chọn)
           fs.unlinkSync(filePath);
-          console.log('XLSX file has been sent and deleted successfully');
         }
       });
     } catch (error) {
       console.error('Error exporting XLSX:', error);
-      res.status(500).send('Internal Server Error');
+      throw Errors.badRequest;
     }
   }
 
@@ -125,24 +124,19 @@ export class GradeController {
   async importCsv(
     @Param('classId') classId: string,
     @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
   ) {
-    console.log(
-      '🚀 ~ file: grade.controller.ts:123 ~ GradeController ~ file:',
-      file,
-    );
     try {
       if (!file) {
-        throw new Error('No file provided');
+        throw Errors.badRequest;
       }
 
       const filePath = file.buffer;
-
-      await this.gradeService.importCsv(classId, filePath);
-
-      return { message: 'CSV file has been imported successfully' };
+      const data = await this.gradeService.importCsv(classId, filePath);
+      res.send(new ResponseWrapper(data, null, null));
     } catch (error) {
       console.error('Error importing CSV:', error);
-      throw new Error('Error importing CSV');
+      throw Errors.badRequest;
     }
   }
 
@@ -171,16 +165,15 @@ export class GradeController {
       res.download(filePath, 'student-list.csv', (err) => {
         if (err) {
           console.error('Error downloading CSV file:', err);
-          res.status(500).send('Internal Server Error');
+          throw Errors.badRequest;
         } else {
           // Xóa file sau khi đã gửi về client (tuỳ chọn)
           fs.unlinkSync(filePath);
-          console.log('CSV file has been sent and deleted successfully');
         }
       });
     } catch (error) {
       console.error('Error exporting CSV:', error);
-      res.status(500).send('Internal Server Error');
+      throw Errors.badRequest;
     }
   }
 
@@ -189,24 +182,23 @@ export class GradeController {
   async importAssignmentCsv(
     @Param('gradeId') gradeId: number,
     @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
   ) {
-    console.log(
-      '🚀 ~ file: grade.controller.ts:123 ~ GradeController ~ file:',
-      file,
-    );
     try {
       if (!file) {
-        throw new Error('No file provided');
+        throw Errors.badRequest;
       }
 
       const filePath = file.buffer;
+      const data = await this.gradeService.importAssignmentCsv(
+        gradeId,
+        filePath,
+      );
 
-      await this.gradeService.importAssignmentCsv(gradeId, filePath);
-
-      return { message: 'CSV file has been imported successfully' };
+      res.send(new ResponseWrapper(data, null, null));
     } catch (error) {
       console.error('Error importing CSV:', error);
-      throw new Error('Error importing CSV');
+      throw Errors.badRequest;
     }
   }
 
@@ -254,16 +246,15 @@ export class GradeController {
       res.download(filePath, 'grade-board.csv', (err) => {
         if (err) {
           console.error('Error downloading CSV file:', err);
-          res.status(500).send('Internal Server Error');
+          throw Errors.serverError;
         } else {
           // Xóa file sau khi đã gửi về client (tuỳ chọn)
           fs.unlinkSync(filePath);
-          console.log('CSV file has been sent and deleted successfully');
         }
       });
     } catch (error) {
       console.error('Error exporting CSV:', error);
-      res.status(500).send('Internal Server Error');
+      throw Errors.serverError;
     }
   }
 
