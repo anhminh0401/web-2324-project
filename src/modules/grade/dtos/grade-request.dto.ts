@@ -27,3 +27,9 @@ export class InfoStudentRealDto {
 export class InfoFinalizedDto {
   gradeId: number;
 }
+
+export class InfoChangeNameDto {
+  classId: string;
+  mssv: string;
+  fullname: string;
+}

@@ -20,6 +20,7 @@ import { ResponseWrapper } from '../../helper/response-wrapper';
 import {
   GradeColumnInfo,
   GradeUpdateInfo,
+  InfoChangeNameDto,
   InfoFinalizedDto,
   InfoMarkGradeDto,
   InfoStudentRealDto,
@@ -269,6 +270,17 @@ export class GradeController {
       req.user.email,
       infoFinalized.gradeId,
     );
+    res.send(new ResponseWrapper(data, null, null));
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/change-name')
+  async editName(
+    @Body() infoChangeName: InfoChangeNameDto,
+    @Req() req,
+    @Res() res: Response,
+  ) {
+    const data = await this.gradeService.editName(infoChangeName);
     res.send(new ResponseWrapper(data, null, null));
   }
 }

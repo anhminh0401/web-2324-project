@@ -8,6 +8,7 @@ import { GradeStructure } from './entities/grade-structure.entity';
 import {
   GradeColumnInfo,
   GradeUpdateInfo,
+  InfoChangeNameDto,
   InfoMarkGradeDto,
   InfoStudentRealDto,
 } from './dtos/grade-request.dto';
@@ -521,6 +522,18 @@ export class GradeService {
       type: 'grade finalized',
       classId: gradeStruc.classId,
       gradeId: gradeStruc.gradeId,
+    });
+    return true;
+  };
+
+  public editName = async (infoChangeName: InfoChangeNameDto) => {
+    const { classId, mssv, fullname } = infoChangeName;
+    await AppDataSource.transaction(async (transaction) => {
+      await transaction.update(
+        StudentReal,
+        { classId: classId, mssv: mssv },
+        { fullname: fullname },
+      );
     });
     return true;
   };
