@@ -17,6 +17,8 @@ export class InfoAllClassDto {
   emai: string;
   @Expose()
   fullname: string;
+  @Expose()
+  amount: string;
 
   static fromDatabase = (data) => {
     return plainToInstance(InfoAllClassDto, data, {
