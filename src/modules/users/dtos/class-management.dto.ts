@@ -18,7 +18,9 @@ export class InfoAllClassDto {
   @Expose()
   fullname: string;
   @Expose()
-  amount: string;
+  studentCount: string;
+  @Expose()
+  teacherCount: string;
 
   static fromDatabase = (data) => {
     return plainToInstance(InfoAllClassDto, data, {
