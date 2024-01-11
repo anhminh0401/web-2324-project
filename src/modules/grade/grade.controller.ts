@@ -80,21 +80,21 @@ export class GradeController {
   @Get('export-csv/:classId')
   async exportCsv(@Param('classId') classId: string, @Res() res: Response) {
     try {
-      const filePath = await this.gradeService.exportCsv(classId);
+      const buffer = await this.gradeService.exportCsv(classId);
 
-      // Gửi file về client
-      res.download(filePath, 'student-list.csv', (err) => {
-        if (err) {
-          console.error('Error downloading CSV file:', err);
-          throw Errors.badRequest;
-        } else {
-          // Xóa file sau khi đã gửi về client (tuỳ chọn)
-          fs.unlinkSync(filePath);
-        }
-      });
+      // Set the appropriate headers
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename=grade-students.csv`,
+      );
+
+      // Send the buffer as the response
+      res.status(200).send(buffer);
     } catch (error) {
       console.error('Error exporting CSV:', error);
-      throw Errors.badRequest;
+      // Handle errors accordingly
+      res.status(500).send('Error exporting CSV');
     }
   }
 
@@ -156,25 +156,24 @@ export class GradeController {
   @Get('export-grade/:gradeId')
   async exportAssignmentCsv(
     @Param('gradeId') gradeId: number,
-    @Req() req,
     @Res() res: Response,
   ) {
     try {
-      const filePath = await this.gradeService.exportAssignmentCsv(gradeId);
+      const buffer = await this.gradeService.exportAssignmentCsv(gradeId);
 
-      // Gửi file về client
-      res.download(filePath, 'student-list.csv', (err) => {
-        if (err) {
-          console.error('Error downloading CSV file:', err);
-          throw Errors.badRequest;
-        } else {
-          // Xóa file sau khi đã gửi về client (tuỳ chọn)
-          fs.unlinkSync(filePath);
-        }
-      });
+      // Set the appropriate headers
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename=grade-students.csv`,
+      );
+
+      // Send the buffer as the response
+      res.status(200).send(buffer);
     } catch (error) {
       console.error('Error exporting CSV:', error);
-      throw Errors.badRequest;
+      // Handle errors accordingly
+      res.status(500).send('Error exporting CSV');
     }
   }
 
@@ -237,22 +236,20 @@ export class GradeController {
   @Get('export-board/:classId')
   async exportGradeBoard(
     @Param('classId') classId: string,
-    @Req() req,
     @Res() res: Response,
   ) {
     try {
-      const filePath = await this.gradeService.exportGradeBoard(classId);
+      const buffer = await this.gradeService.exportGradeBoard(classId);
 
-      // Gửi file về client
-      res.download(filePath, 'grade-board.csv', (err) => {
-        if (err) {
-          console.error('Error downloading CSV file:', err);
-          throw Errors.serverError;
-        } else {
-          // Xóa file sau khi đã gửi về client (tuỳ chọn)
-          fs.unlinkSync(filePath);
-        }
-      });
+      // Set the appropriate headers
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename=grade-board.csv',
+      );
+
+      // Send the buffer as the response
+      res.status(200).send(buffer);
     } catch (error) {
       console.error('Error exporting CSV:', error);
       throw Errors.serverError;
