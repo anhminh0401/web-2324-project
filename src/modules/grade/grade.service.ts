@@ -4,6 +4,7 @@ import * as fastcsv from 'fast-csv';
 import * as ExcelJS from 'exceljs';
 import * as streamifier from 'streamifier';
 import * as path from 'path';
+import * as stream from 'stream';
 import { AppDataSource } from '../../database/connect-database';
 import { GradeStructure } from './entities/grade-structure.entity';
 import {
@@ -193,20 +194,27 @@ export class GradeService {
         FullName: student.fullname,
         // Add more properties if needed
       }));
-      const filePath = path.join(__dirname, '../../student-list.csv');
-      fs.mkdirSync(path.dirname(filePath), { recursive: true });
-      // const filePath = 'file/student-list.csv'; // Điều chỉnh đường dẫn tương ứng
+      const buffer = await new Promise<Buffer>((resolve, reject) => {
+        const writableStream = new stream.Writable();
+        const chunks: any[] = [];
 
-      const ws = fs.createWriteStream(filePath, 'utf-8');
-      await new Promise<void>((resolve, reject) => {
-        fastcsv
-          .write(csvData, { headers: true })
-          .pipe(ws)
-          .on('finish', resolve)
-          .on('error', reject);
+        writableStream._write = (chunk, encoding, next) => {
+          chunks.push(chunk);
+          next();
+        };
+
+        writableStream.on('finish', () => {
+          resolve(Buffer.concat(chunks));
+        });
+
+        writableStream.on('error', (error) => {
+          reject(error);
+        });
+
+        fastcsv.write(csvData, { headers: true }).pipe(writableStream);
       });
 
-      return filePath;
+      return buffer;
     } catch (error) {
       console.error('Error exporting CSV:', error);
       throw new Error('Error exporting CSV');
@@ -317,28 +325,33 @@ export class GradeService {
     const gradeStudents = await GradeStudent.find({
       where: { gradeId: gradeId },
     });
+
     const csvData = gradeStudents.map((grade) => ({
       StudentId: grade.mssv,
       Grade: grade.point,
     }));
 
-    const filePath = path.join(__dirname, '../../grade-students.csv');
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    try {
-      const ws = fs.createWriteStream(filePath, 'utf-8');
-      await new Promise<void>((resolve, reject) => {
-        fastcsv
-          .write(csvData, { headers: true })
-          .pipe(ws)
-          .on('finish', resolve)
-          .on('error', reject);
+    const buffer = await new Promise<Buffer>((resolve, reject) => {
+      const writableStream = new stream.Writable();
+      const chunks: any[] = [];
+
+      writableStream._write = (chunk, encoding, next) => {
+        chunks.push(chunk);
+        next();
+      };
+
+      writableStream.on('finish', () => {
+        resolve(Buffer.concat(chunks));
       });
 
-      return filePath;
-    } catch (error) {
-      console.error('Error exporting CSV:', error);
-      throw new Error('Error exporting CSV');
-    }
+      writableStream.on('error', (error) => {
+        reject(error);
+      });
+
+      fastcsv.write(csvData, { headers: true }).pipe(writableStream);
+    });
+
+    return buffer;
   };
 
   public async importAssignmentCsv(
@@ -502,23 +515,44 @@ export class GradeService {
       return data;
     });
 
-    const filePath = path.join(__dirname, '../../grade-board.csv');
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    try {
-      const ws = fs.createWriteStream(filePath, 'utf-8');
-      await new Promise<void>((resolve, reject) => {
-        fastcsv
-          .write(csvData, { headers: true })
-          .pipe(ws)
-          .on('finish', resolve)
-          .on('error', reject);
+    // const filePath = path.join(__dirname, '../../grade-board.csv');
+    // fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    // try {
+    //   const ws = fs.createWriteStream(filePath, 'utf-8');
+    //   await new Promise<void>((resolve, reject) => {
+    //     fastcsv
+    //       .write(csvData, { headers: true })
+    //       .pipe(ws)
+    //       .on('finish', resolve)
+    //       .on('error', reject);
+    //   });
+
+    //   return filePath;
+    const buffer = await new Promise<Buffer>((resolve, reject) => {
+      const writableStream = new stream.Writable();
+      const chunks: any[] = [];
+
+      writableStream._write = (chunk, encoding, next) => {
+        chunks.push(chunk);
+        next();
+      };
+
+      writableStream.on('finish', () => {
+        resolve(Buffer.concat(chunks));
       });
 
-      return filePath;
-    } catch (error) {
-      console.error('Error exporting CSV:', error);
-      throw new Error('Error exporting CSV');
-    }
+      writableStream.on('error', (error) => {
+        reject(error);
+      });
+
+      fastcsv.write(csvData, { headers: true }).pipe(writableStream);
+    });
+
+    return buffer;
+    // } catch (error) {
+    //   console.error('Error exporting CSV:', error);
+    //   throw new Error('Error exporting CSV');
+    // }
   };
 
   private calculateTotalScore = (
