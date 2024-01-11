@@ -193,7 +193,7 @@ export class GradeService {
         FullName: student.fullname,
         // Add more properties if needed
       }));
-      const filePath = path.join(__dirname, '../../file/student-list.csv');
+      const filePath = path.join(__dirname, '../../student-list.csv');
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
       // const filePath = 'file/student-list.csv'; // Điều chỉnh đường dẫn tương ứng
 
@@ -233,7 +233,7 @@ export class GradeService {
         // Add more properties if needed
       });
 
-      const filePath = path.join(__dirname, '../../file/student-list.csv');
+      const filePath = path.join(__dirname, '../../student-list.csv');
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
       await workbook.xlsx.writeFile(filePath);
@@ -322,7 +322,7 @@ export class GradeService {
       Grade: grade.point,
     }));
 
-    const filePath = path.join(__dirname, '../../file/grade-students.csv');
+    const filePath = path.join(__dirname, '../../grade-students.csv');
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     try {
       const ws = fs.createWriteStream(filePath, 'utf-8');
@@ -502,7 +502,7 @@ export class GradeService {
       return data;
     });
 
-    const filePath = path.join(__dirname, '../../file/grade-board.csv');
+    const filePath = path.join(__dirname, '../../grade-board.csv');
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     try {
       const ws = fs.createWriteStream(filePath, 'utf-8');
