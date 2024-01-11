@@ -148,4 +148,10 @@ export class UsersService {
     });
     return true;
   };
+
+  public getAllClass = async (userId: number) => {
+    await this.checkAdmin(userId);
+    const listClass = await Class.find();
+    return listClass;
+  };
 }
