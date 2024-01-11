@@ -124,7 +124,7 @@ export class UsersController {
   @UseGuards(AuthGuard)
   @Get('admin/classes')
   async getListClasses(@Request() req, @Res() res: Response) {
-    const data = await this.usersService.getListAccount(req.user.userId);
+    const data = await this.usersService.getAllClass(req.user.userId);
     res.send(new ResponseWrapper(data, null, null));
   }
 }

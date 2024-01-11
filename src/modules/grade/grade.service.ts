@@ -29,6 +29,7 @@ import {
 } from './dtos/grade-response.dto';
 import { User } from '../users/entities/user.entity';
 import { NotificationService } from '../notification/notification.service';
+import { GradeArrange } from './entities/grade-arrange.entity';
 
 @Injectable()
 export class GradeService {
@@ -81,7 +82,30 @@ export class GradeService {
     const data = StructureGradeResDto.fromDatabase(structure) as unknown;
     const typedData = data as StructureGradeResDto[];
     const result = this.combinedShowGrade(typedData);
-    return result;
+    const arrange = await GradeArrange.findOne({ where: { classId } });
+    const arrangeArr = arrange.gradeArrange.split(',').map(Number);
+    console.log(
+      '🚀 ~ GradeService ~ showGradeStructure= ~ arrange:',
+      arrangeArr,
+    );
+    const sortedData = arrangeArr
+      .map((id) => {
+        const item = result.find((item) => item.gradeId === id);
+        if (item) {
+          return {
+            ...item,
+            children:
+              item.children && item.children.length > 0
+                ? item.children.sort(
+                    (a, b) => arrangeArr.indexOf(a) - arrangeArr.indexOf(b),
+                  )
+                : [],
+          };
+        }
+        return null;
+      })
+      .filter((item) => item !== null);
+    return sortedData;
   };
 
   private combinedShowGrade = (data: StructureGradeResDto[]) => {
@@ -538,6 +562,32 @@ export class GradeService {
         { classId: classId, mssv: mssv },
         { fullname: fullname },
       );
+    });
+    return true;
+  };
+
+  public arrangeColumn = async (
+    classId: string,
+    data: StructureGradeResDto[],
+  ) => {
+    const gradeIds = data.reduce((acc, item) => {
+      if (item.gradeId) {
+        acc.push(item.gradeId);
+      }
+      if (item.children && item.children.length > 0) {
+        acc.push(...item.children);
+      }
+      return acc;
+    }, []);
+    console.log(
+      '🚀 ~ GradeService ~ gradeIds ~ gradeIds:',
+      gradeIds.toString(),
+    );
+    await AppDataSource.transaction(async (transaction) => {
+      await transaction.save(GradeArrange, {
+        classId: classId,
+        gradeArrange: gradeIds.toString(),
+      });
     });
     return true;
   };

@@ -283,4 +283,16 @@ export class GradeController {
     const data = await this.gradeService.editName(infoChangeName);
     res.send(new ResponseWrapper(data, null, null));
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/arrange/:classId')
+  async arrangeColumn(
+    @Param('classId') classId: string,
+    @Body() infoStruct,
+    @Req() req,
+    @Res() res: Response,
+  ) {
+    const data = await this.gradeService.arrangeColumn(classId, infoStruct);
+    res.send(new ResponseWrapper(data, null, null));
+  }
 }

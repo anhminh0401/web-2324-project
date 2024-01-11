@@ -7,6 +7,8 @@ import { InfoProfileRequest, InfoProfileResponse } from './dtos/profile.dto';
 import { Errors } from '../../helper/errors';
 import { AppDataSource } from '../../database/connect-database';
 import { Class } from '../class/entities/class.entity';
+import { callProcedure } from '../../database/call-store-procedure';
+import { InfoAllClassDto } from './dtos/class-management.dto';
 
 @Injectable()
 export class UsersService {
@@ -151,7 +153,12 @@ export class UsersService {
 
   public getAllClass = async (userId: number) => {
     await this.checkAdmin(userId);
-    const listClass = await Class.find();
-    return listClass;
+    const classes = await callProcedure<InfoAllClassDto[]>(
+      'GetAllClass',
+      [],
+      InfoAllClassDto,
+    );
+    console.log('🚀 ~ UsersService ~ getAllClass= ~ classes:', classes);
+    return classes;
   };
 }
