@@ -47,7 +47,9 @@ export class GradeService {
 
   public removeColumn = async (gradeId: number) => {
     await AppDataSource.transaction(async (transaction) => {
+      await transaction.delete(GradeStructure, { gradeParent: gradeId });
       await transaction.delete(GradeStructure, { gradeId: gradeId });
+      await transaction.delete(GradeStudent, { gradeId });
     });
     return true;
   };
@@ -365,6 +367,7 @@ export class GradeService {
         [classId],
         InfoStudentGradeDto,
       );
+      console.log('🚀 ~ GradeService ~ students:', students);
       const convertStudents = this.combinedStudentGrades(students);
       const result = [];
       for (const student of convertStudents) {
@@ -388,6 +391,7 @@ export class GradeService {
   private combinedStudentGrades = (
     studentGrades: InfoStudentGradeDto[],
   ): CombinedStudent[] => {
+    console.log('🚀 ~ GradeService ~ studentGrades:', studentGrades);
     const studentScores = {};
 
     studentGrades.forEach((grade) => {
