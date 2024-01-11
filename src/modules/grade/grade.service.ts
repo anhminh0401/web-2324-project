@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as fastcsv from 'fast-csv';
 import * as ExcelJS from 'exceljs';
 import * as streamifier from 'streamifier';
+import * as path from 'path';
 import { AppDataSource } from '../../database/connect-database';
 import { GradeStructure } from './entities/grade-structure.entity';
 import {
@@ -39,8 +40,44 @@ export class GradeService {
   ) {}
 
   public addColumn = async (gradeColumnInfo: GradeColumnInfo) => {
+    let length = 0;
+    const arrange = await GradeArrange.findOne({
+      where: { classId: gradeColumnInfo.classId },
+    });
+    const arrangeArr = arrange.gradeArrange.split(',').map(Number);
+    if (gradeColumnInfo.gradeParent !== 0) {
+      const children = await GradeStructure.findAndCount({
+        where: {
+          classId: gradeColumnInfo.classId,
+          gradeParent: gradeColumnInfo.gradeParent,
+        },
+      });
+      length = children[1] + 1;
+    }
     await AppDataSource.transaction(async (transaction) => {
-      await transaction.save(GradeStructure, gradeColumnInfo);
+      const column = await transaction.save(GradeStructure, gradeColumnInfo);
+      if (column.gradeParent === 0) {
+        arrangeArr.push(column.gradeId);
+        await transaction.update(
+          GradeArrange,
+          { classId: gradeColumnInfo.classId },
+          { gradeArrange: arrangeArr.toString() },
+        );
+      } else {
+        const firstPart = arrangeArr.slice(
+          0,
+          arrangeArr.indexOf(column.gradeParent) + length,
+        );
+        const secondPart = arrangeArr.slice(
+          arrangeArr.indexOf(column.gradeParent) + length,
+        );
+        const newArray = [...firstPart, column.gradeId, ...secondPart];
+        await transaction.update(
+          GradeArrange,
+          { classId: gradeColumnInfo.classId },
+          { gradeArrange: newArray.toString() },
+        );
+      }
     });
     const dataColumn = await this.showGradeStructure(gradeColumnInfo.classId);
     return dataColumn;
@@ -84,10 +121,6 @@ export class GradeService {
     const result = this.combinedShowGrade(typedData);
     const arrange = await GradeArrange.findOne({ where: { classId } });
     const arrangeArr = arrange.gradeArrange.split(',').map(Number);
-    console.log(
-      '🚀 ~ GradeService ~ showGradeStructure= ~ arrange:',
-      arrangeArr,
-    );
     const sortedData = arrangeArr
       .map((id) => {
         const item = result.find((item) => item.gradeId === id);
@@ -160,8 +193,9 @@ export class GradeService {
         FullName: student.fullname,
         // Add more properties if needed
       }));
-
-      const filePath = 'file/student-list.csv'; // Điều chỉnh đường dẫn tương ứng
+      const filePath = path.join(__dirname, '../../file/student-list.csv');
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      // const filePath = 'file/student-list.csv'; // Điều chỉnh đường dẫn tương ứng
 
       const ws = fs.createWriteStream(filePath, 'utf-8');
       await new Promise<void>((resolve, reject) => {
@@ -199,7 +233,8 @@ export class GradeService {
         // Add more properties if needed
       });
 
-      const filePath = 'file/student-list.csv';
+      const filePath = path.join(__dirname, '../../file/student-list.csv');
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
       await workbook.xlsx.writeFile(filePath);
 
@@ -287,7 +322,8 @@ export class GradeService {
       Grade: grade.point,
     }));
 
-    const filePath = 'file/grade-students.csv';
+    const filePath = path.join(__dirname, '../../file/grade-students.csv');
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
     try {
       const ws = fs.createWriteStream(filePath, 'utf-8');
       await new Promise<void>((resolve, reject) => {
@@ -456,17 +492,18 @@ export class GradeService {
           for (const childId of grade.children) {
             const childGrade = grade[childId];
             data[`${childGrade.gradeName} (${childGrade.gradeScale}%)`] =
-              student.grades[`${grade.gradeId}`];
+              student.grades[`${grade.gradeId}`] || 0;
           }
         }
         data[`${grade.gradeName} (${grade.gradeScale}%)`] =
-          student.grades[`${grade.gradeId}`];
+          student.grades[`${grade.gradeId}`] || 0;
       });
-      data['final'] = student.total;
+      data['final'] = student.total || 0;
       return data;
     });
 
-    const filePath = 'file/grade-board.csv';
+    const filePath = path.join(__dirname, '../../file/grade-board.csv');
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
     try {
       const ws = fs.createWriteStream(filePath, 'utf-8');
       await new Promise<void>((resolve, reject) => {
@@ -579,10 +616,6 @@ export class GradeService {
       }
       return acc;
     }, []);
-    console.log(
-      '🚀 ~ GradeService ~ gradeIds ~ gradeIds:',
-      gradeIds.toString(),
-    );
     await AppDataSource.transaction(async (transaction) => {
       await transaction.save(GradeArrange, {
         classId: classId,
