@@ -91,7 +91,7 @@ export class UsersService {
     mssv: string,
   ) => {
     await this.checkAdmin(adminId);
-    if (!mssv) {
+    if (mssv) {
       const isMssv = await User.findOne({ where: { mssv: mssv } });
       if (isMssv) throw Errors.existMSSV;
     }
