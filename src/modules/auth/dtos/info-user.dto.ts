@@ -11,6 +11,9 @@ export class InfoUserResponse {
   fullname: string;
 
   @Expose()
+  isAdmin: boolean;
+
+  @Expose()
   access_token: string;
 
   static fromDatabase = (data) => {
