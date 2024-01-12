@@ -30,11 +30,15 @@ export class GradeReivewService {
     infoReivew: InfoReviewRequestDto,
   ) => {
     await this.classService.checkStudent(email, infoReivew.classId);
+    const check = await GradeStructure.findOne({
+      where: { gradeId: infoReivew.gradeId },
+    });
+    if (!check || !check.isView) throw Errors.cannotCreateReview;
+    const checkParent = await GradeStructure.findOne({
+      where: { gradeParent: infoReivew.gradeId },
+    });
+    if (checkParent) throw Errors.cannotCreateReview;
     await AppDataSource.transaction(async (transaction) => {
-      const check = await GradeStructure.findOne({
-        where: { gradeId: infoReivew.gradeId },
-      });
-      if (!check || !check.isView) throw Errors.cannotCreateReview;
       const gradeReview = await transaction.save(GradeReview, infoReivew);
       await this.notiService.createNoti({
         type: 'have review',
@@ -68,7 +72,7 @@ export class GradeReivewService {
       [reviewId],
       InfoDetailReview,
     );
-    const comments = this.getListComment(reviewId);
+    const comments = await this.getListComment(reviewId);
     return { review, comments };
   };
 

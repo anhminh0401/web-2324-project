@@ -23,7 +23,9 @@ export class InfoListCommentDto {
   @Expose()
   mssv: string;
   @Expose()
-  name: string;
+  fullname: string;
+  @Expose()
+  email: string;
   @Expose()
   commentId: string;
   @Expose()
