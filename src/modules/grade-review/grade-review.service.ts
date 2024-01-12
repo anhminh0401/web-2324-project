@@ -16,6 +16,7 @@ import {
 import { NotificationService } from '../notification/notification.service';
 import { GradeStructure } from '../grade/entities/grade-structure.entity';
 import { Errors } from '../../helper/errors';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class GradeReivewService {
@@ -38,6 +39,11 @@ export class GradeReivewService {
       where: { gradeParent: infoReivew.gradeId },
     });
     if (checkParent) throw Errors.cannotCreateReview;
+
+    const user = await User.findOne({ where: { userId: userId } });
+    if (!user.mssv) throw Errors.cannotCreateReview;
+    infoReivew.mssv = user.mssv;
+
     await AppDataSource.transaction(async (transaction) => {
       const gradeReview = await transaction.save(GradeReview, infoReivew);
       await this.notiService.createNoti({

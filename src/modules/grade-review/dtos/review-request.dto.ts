@@ -1,5 +1,5 @@
 export class InfoReviewRequestDto {
-  mssv: string;
+  mssv?: string;
   gradeId: number;
   classId: string;
   expectGrade: number;
