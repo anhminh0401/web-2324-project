@@ -11,6 +11,8 @@ export class InfoListReviewDto {
   reviewId: number;
   @Expose()
   gradeName: string;
+  @Expose()
+  isClose: boolean;
 
   static fromDatabase = (data) => {
     return plainToInstance(InfoListReviewDto, data, {
