@@ -13,6 +13,8 @@ export class InfoNotiResponseDto {
   reviewId: number;
   @Expose()
   name: string;
+  @Expose()
+  type: string;
 
   static fromDatabase = (data) => {
     return plainToInstance(InfoNotiResponseDto, data, {

@@ -455,8 +455,23 @@ export class GradeService {
         [classId, user.mssv],
         InfoStudentGradeDto,
       );
-      const convertStudent = this.combinedStudentGrades(student);
-      const result = this.calculateStudentScores(convertStudent[0], structure);
+      console.log('🚀 ~ GradeService ~ student:', student);
+      let result: CombinedStudent;
+      if (student && student.length > 0) {
+        const convertStudent = this.combinedStudentGrades(student);
+        result = this.calculateStudentScores(convertStudent[0], structure);
+      } else {
+        const info = await StudentReal.findOne({
+          where: { classId, mssv: user.mssv },
+        });
+        result = {
+          fullname: info.fullname,
+          grades: {},
+          mssv: info.mssv,
+          total: 0,
+        };
+      }
+
       return { structure, data: result };
     }
   };
