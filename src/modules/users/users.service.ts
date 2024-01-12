@@ -114,9 +114,10 @@ export class UsersService {
     });
   };
 
-  public mapMssvByCsv = async (fileBuffer: Buffer) => {
-    const infoUser: { mssv: string; userId: number }[] = [];
-    try {
+  public mapMssvByCsv = async (fileBuffer: Buffer): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const infoUser: { mssv: string; userId: number }[] = [];
+
       const readableStream = streamifier.createReadStream(fileBuffer);
 
       readableStream
@@ -128,12 +129,17 @@ export class UsersService {
           });
         })
         .on('end', async () => {
-          await this.mapMssvToDatabase(infoUser);
+          try {
+            await this.mapMssvToDatabase(infoUser);
+            resolve(); // Đảm bảo rằng Promise sẽ hoàn thành khi xử lý xong
+          } catch (error) {
+            reject(error); // Nếu có lỗi, reject Promise
+          }
+        })
+        .on('error', (error) => {
+          reject(error); // Nếu có lỗi trong quá trình đọc, reject Promise
         });
-    } catch (error) {
-      console.error('Error importing CSV:', error);
-      throw Errors.badRequest;
-    }
+    });
   };
 
   private mapMssvToDatabase = async (

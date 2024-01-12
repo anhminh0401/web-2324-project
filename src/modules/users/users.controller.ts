@@ -118,7 +118,7 @@ export class UsersController {
     const fileBuffer = file.buffer;
     const data = await this.usersService.mapMssvByCsv(fileBuffer);
 
-    return res.send(new ResponseWrapper(data, null, null));
+    res.send(new ResponseWrapper(data, null, null));
   }
 
   @UseGuards(AuthGuard)
