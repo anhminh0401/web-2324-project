@@ -29,6 +29,7 @@ export class GradeReivewService {
     email: string,
     infoReivew: InfoReviewRequestDto,
   ) => {
+    await this.classService.checkStudent(email, infoReivew.classId);
     await AppDataSource.transaction(async (transaction) => {
       const check = await GradeStructure.findOne({
         where: { gradeId: infoReivew.gradeId },
@@ -112,7 +113,12 @@ export class GradeReivewService {
     return comments;
   };
 
-  public markReviewClose = async (reviewId: number) => {
+  public markReviewClose = async (email: string, reviewId: number) => {
+    const review = await GradeReview.findOne({
+      where: { reviewId: reviewId },
+    });
+    if (!review) throw Errors.findNotFoundReview;
+    await this.classService.checkTeacher(email, review.classId);
     await AppDataSource.transaction(async (transaction) => {
       await transaction.update(
         GradeReview,
@@ -122,9 +128,6 @@ export class GradeReivewService {
     });
 
     // create noti
-    const review = await GradeReview.findOne({
-      where: { reviewId: reviewId },
-    });
     await this.notiService.createNoti({
       type: 'mark review',
       classId: review.classId,

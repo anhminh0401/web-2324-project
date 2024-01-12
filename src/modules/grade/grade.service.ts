@@ -40,7 +40,11 @@ export class GradeService {
     private notiService: NotificationService,
   ) {}
 
-  public addColumn = async (gradeColumnInfo: GradeColumnInfo) => {
+  public addColumn = async (
+    email: string,
+    gradeColumnInfo: GradeColumnInfo,
+  ) => {
+    await this.classService.checkTeacher(email, gradeColumnInfo.classId);
     let length = 0;
     const arrange = await GradeArrange.findOne({
       where: { classId: gradeColumnInfo.classId },
@@ -84,7 +88,9 @@ export class GradeService {
     return dataColumn;
   };
 
-  public removeColumn = async (gradeId: number) => {
+  public removeColumn = async (email: string, gradeId: number) => {
+    const grade = await GradeStructure.findOne({ where: { gradeId } });
+    await this.classService.checkTeacher(email, grade.classId);
     await AppDataSource.transaction(async (transaction) => {
       await transaction.delete(GradeStructure, { gradeParent: gradeId });
       await transaction.delete(GradeStructure, { gradeId: gradeId });
@@ -93,7 +99,12 @@ export class GradeService {
     return true;
   };
 
-  public updateColumn = async (gradeUpdateInfo: GradeUpdateInfo) => {
+  public updateColumn = async (
+    email: string,
+    gradeUpdateInfo: GradeUpdateInfo,
+  ) => {
+    await this.classService.checkTeacher(email, gradeUpdateInfo.classId);
+
     const info = {};
     if (gradeUpdateInfo.gradeName !== undefined)
       info['gradeName'] = gradeUpdateInfo.gradeName;
@@ -161,6 +172,7 @@ export class GradeService {
     classId: string,
     infoStudent: InfoStudentRealDto,
   ) => {
+    await this.classService.checkTeacher(email, classId);
     const check = await ClassTeacher.findOne({
       where: { classId: classId, email: email },
     });
@@ -177,7 +189,8 @@ export class GradeService {
     // TODO: return student board
   };
 
-  public exportCsv = async (classId: string) => {
+  public exportCsv = async (email: string, classId: string) => {
+    await this.classService.checkTeacher(email, classId);
     try {
       const students = await callProcedure<InfoStudentsExportDto[]>(
         'GetClassStudent',
@@ -221,7 +234,8 @@ export class GradeService {
     }
   };
   // export student
-  public async exportXlsx(classId: string): Promise<string> {
+  public async exportXlsx(email: string, classId: string): Promise<string> {
+    await this.classService.checkTeacher(email, classId);
     try {
       const students = await callProcedure<InfoStudentsExportDto[]>(
         'GetClassStudent',
@@ -254,7 +268,14 @@ export class GradeService {
   }
 
   // import student
-  public async importCsv(classId: string, fileBuffer: Buffer): Promise<void> {
+  public async importCsv(
+    userId: number,
+    email: string,
+    classId: string,
+    fileBuffer: Buffer,
+  ): Promise<void> {
+    const role = await this.classService.checkRole(userId, email, classId);
+    if (role !== 'owner') throw Errors.notHaveRole;
     try {
       const studentsData: {
         classId: string;
@@ -310,7 +331,8 @@ export class GradeService {
     });
   }
 
-  public markGrade = async (infoMarkGrade: InfoMarkGradeDto) => {
+  public markGrade = async (email: string, infoMarkGrade: InfoMarkGradeDto) => {
+    await this.classService.checkTeacher(email, infoMarkGrade.classId);
     const check = await GradeStructure.findOne({
       where: { classId: infoMarkGrade.classId, gradeId: infoMarkGrade.gradeId },
     });
@@ -321,7 +343,10 @@ export class GradeService {
     return true;
   };
 
-  public exportAssignmentCsv = async (gradeId: number) => {
+  public exportAssignmentCsv = async (email: string, gradeId: number) => {
+    const grade = await GradeStructure.findOne({ where: { gradeId } });
+    if (!grade) throw Errors.findNotFoundGrade;
+    await this.classService.checkTeacher(email, grade.classId);
     const gradeStudents = await GradeStudent.find({
       where: { gradeId: gradeId },
     });
@@ -355,11 +380,13 @@ export class GradeService {
   };
 
   public async importAssignmentCsv(
+    email: string,
     gradeId: number,
     fileBuffer: Buffer,
   ): Promise<void> {
     const grade = await GradeStructure.findOne({ where: { gradeId: gradeId } });
     if (!grade) throw Errors.cannotImportAssignment;
+    await this.classService.checkTeacher(email, grade.classId);
     const assignmentData: {
       gradeId: number;
       classId: string;
@@ -496,7 +523,8 @@ export class GradeService {
     return combinedStudent;
   };
 
-  public exportGradeBoard = async (classId: string) => {
+  public exportGradeBoard = async (email: string, classId: string) => {
+    await this.classService.checkTeacher(email, classId);
     const structure = await this.showGradeStructure(classId);
 
     const students = await callProcedure<InfoStudentGradeDto[]>(
@@ -619,8 +647,8 @@ export class GradeService {
   };
 
   public markGradePublic = async (email: string, gradeId: number) => {
-    const teacher = await ClassTeacher.findOne({ where: { email: email } });
-    if (!teacher) throw Errors.notHaveRole;
+    const grade = await GradeStructure.findOne({ where: { gradeId } });
+    await this.classService.checkTeacher(email, grade.classId);
     await AppDataSource.transaction(async (transaction) => {
       await transaction.update(
         GradeStructure,

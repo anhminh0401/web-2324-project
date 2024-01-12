@@ -57,6 +57,10 @@ export const Errors = {
     'findNotFoundReview',
     'Không tìm thấy review',
   ),
+  findNotFoundGrade: new CustomError(
+    'findNotFoundGrade',
+    'Không tìm thấy grade column',
+  ),
   cannotCreateReview: new CustomError(
     'cannotCreateReview',
     'Không thể tạo review',

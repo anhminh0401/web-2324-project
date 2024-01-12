@@ -39,7 +39,10 @@ export class GradeController {
     @Req() req,
     @Res() res: Response,
   ) {
-    const data = await this.gradeService.addColumn(gradeColumnInfo);
+    const data = await this.gradeService.addColumn(
+      req.user.email,
+      gradeColumnInfo,
+    );
     res.send(new ResponseWrapper(data, null, null));
   }
 
@@ -50,7 +53,7 @@ export class GradeController {
     @Req() req,
     @Res() res: Response,
   ) {
-    const data = await this.gradeService.removeColumn(gradeId);
+    const data = await this.gradeService.removeColumn(req.user.email, gradeId);
     res.send(new ResponseWrapper(data, null, null));
   }
 
@@ -61,7 +64,10 @@ export class GradeController {
     @Req() req,
     @Res() res: Response,
   ) {
-    const data = await this.gradeService.updateColumn(gradeUpdateInfo);
+    const data = await this.gradeService.updateColumn(
+      req.user.email,
+      gradeUpdateInfo,
+    );
     res.send(new ResponseWrapper(data, null, null));
   }
 
@@ -78,46 +84,46 @@ export class GradeController {
 
   @UseGuards(JwtAuthGuard)
   @Get('export-csv/:classId')
-  async exportCsv(@Param('classId') classId: string, @Res() res: Response) {
-    try {
-      const buffer = await this.gradeService.exportCsv(classId);
+  async exportCsv(
+    @Param('classId') classId: string,
+    @Res() res: Response,
+    @Req() req,
+  ) {
+    const buffer = await this.gradeService.exportCsv(req.user.email, classId);
 
-      // Set the appropriate headers
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename=grade-students.csv`,
-      );
+    // Set the appropriate headers
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=grade-students.csv`,
+    );
 
-      // Send the buffer as the response
-      res.status(200).send(buffer);
-    } catch (error) {
-      console.error('Error exporting CSV:', error);
-      // Handle errors accordingly
-      res.status(500).send('Error exporting CSV');
-    }
+    // Send the buffer as the response
+    res.status(200).send(buffer);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('export-xlsx/:classId')
-  async exportXlsx(@Param('classId') classId: string, @Res() res: Response) {
-    try {
-      const filePath = await this.gradeService.exportXlsx(classId);
+  async exportXlsx(
+    @Param('classId') classId: string,
+    @Res() res: Response,
+    @Req() req,
+  ) {
+    const filePath = await this.gradeService.exportXlsx(
+      req.user.email,
+      classId,
+    );
 
-      // Gửi file về client
-      res.download(filePath, 'student-list.xlsx', (err) => {
-        if (err) {
-          console.error('Error downloading XLSX file:', err);
-          throw Errors.badRequest;
-        } else {
-          // Xóa file sau khi đã gửi về client (tuỳ chọn)
-          fs.unlinkSync(filePath);
-        }
-      });
-    } catch (error) {
-      console.error('Error exporting XLSX:', error);
-      throw Errors.badRequest;
-    }
+    // Gửi file về client
+    res.download(filePath, 'student-list.xlsx', (err) => {
+      if (err) {
+        console.error('Error downloading XLSX file:', err);
+        throw Errors.badRequest;
+      } else {
+        // Xóa file sau khi đã gửi về client (tuỳ chọn)
+        fs.unlinkSync(filePath);
+      }
+    });
   }
 
   @Post('import-csv/:classId')
@@ -126,19 +132,20 @@ export class GradeController {
     @Param('classId') classId: string,
     @UploadedFile() file: Express.Multer.File,
     @Res() res: Response,
+    @Req() req,
   ) {
-    try {
-      if (!file) {
-        throw Errors.badRequest;
-      }
-
-      const filePath = file.buffer;
-      const data = await this.gradeService.importCsv(classId, filePath);
-      res.send(new ResponseWrapper(data, null, null));
-    } catch (error) {
-      console.error('Error importing CSV:', error);
+    if (!file) {
       throw Errors.badRequest;
     }
+
+    const filePath = file.buffer;
+    const data = await this.gradeService.importCsv(
+      req.user.userId,
+      req.user.email,
+      classId,
+      filePath,
+    );
+    res.send(new ResponseWrapper(data, null, null));
   }
 
   @UseGuards(JwtAuthGuard)
@@ -148,7 +155,10 @@ export class GradeController {
     @Req() req,
     @Res() res: Response,
   ) {
-    const data = await this.gradeService.markGrade(infoMarkGradeDto);
+    const data = await this.gradeService.markGrade(
+      req.user.email,
+      infoMarkGradeDto,
+    );
     res.send(new ResponseWrapper(data, null, null));
   }
 
@@ -157,24 +167,22 @@ export class GradeController {
   async exportAssignmentCsv(
     @Param('gradeId') gradeId: number,
     @Res() res: Response,
+    @Req() req,
   ) {
-    try {
-      const buffer = await this.gradeService.exportAssignmentCsv(gradeId);
+    const buffer = await this.gradeService.exportAssignmentCsv(
+      req.user.email,
+      gradeId,
+    );
 
-      // Set the appropriate headers
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename=grade-students.csv`,
-      );
+    // Set the appropriate headers
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=grade-students.csv`,
+    );
 
-      // Send the buffer as the response
-      res.status(200).send(buffer);
-    } catch (error) {
-      console.error('Error exporting CSV:', error);
-      // Handle errors accordingly
-      res.status(500).send('Error exporting CSV');
-    }
+    // Send the buffer as the response
+    res.status(200).send(buffer);
   }
 
   @Post('import-assignment/:gradeId')
@@ -183,23 +191,20 @@ export class GradeController {
     @Param('gradeId') gradeId: number,
     @UploadedFile() file: Express.Multer.File,
     @Res() res: Response,
+    @Req() req,
   ) {
-    try {
-      if (!file) {
-        throw Errors.badRequest;
-      }
-
-      const filePath = file.buffer;
-      const data = await this.gradeService.importAssignmentCsv(
-        gradeId,
-        filePath,
-      );
-
-      res.send(new ResponseWrapper(data, null, null));
-    } catch (error) {
-      console.error('Error importing CSV:', error);
+    if (!file) {
       throw Errors.badRequest;
     }
+
+    const filePath = file.buffer;
+    const data = await this.gradeService.importAssignmentCsv(
+      req.user.email,
+      gradeId,
+      filePath,
+    );
+
+    res.send(new ResponseWrapper(data, null, null));
   }
 
   @UseGuards(JwtAuthGuard)
@@ -237,23 +242,22 @@ export class GradeController {
   async exportGradeBoard(
     @Param('classId') classId: string,
     @Res() res: Response,
+    @Req() req,
   ) {
-    try {
-      const buffer = await this.gradeService.exportGradeBoard(classId);
+    const buffer = await this.gradeService.exportGradeBoard(
+      req.user.email,
+      classId,
+    );
 
-      // Set the appropriate headers
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename=grade-board.csv',
-      );
+    // Set the appropriate headers
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=grade-board.csv',
+    );
 
-      // Send the buffer as the response
-      res.status(200).send(buffer);
-    } catch (error) {
-      console.error('Error exporting CSV:', error);
-      throw Errors.serverError;
-    }
+    // Send the buffer as the response
+    res.status(200).send(buffer);
   }
 
   @UseGuards(JwtAuthGuard)

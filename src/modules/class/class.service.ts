@@ -198,4 +198,18 @@ export class ClassService {
     if (checkStudent) return 'student';
     throw Errors.notHaveRole;
   };
+
+  public checkTeacher = async (email: string, classId: string) => {
+    const teacher = await ClassTeacher.findOne({
+      where: { classId: classId, email: email },
+    });
+    if (!teacher) throw Errors.notHaveRole;
+  };
+
+  public checkStudent = async (email: string, classId: string) => {
+    const teacher = await ClassStudent.findOne({
+      where: { classId: classId, email: email },
+    });
+    if (!teacher) throw Errors.notHaveRole;
+  };
 }

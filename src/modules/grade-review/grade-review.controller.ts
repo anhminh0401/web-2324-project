@@ -84,7 +84,10 @@ export class GradeReviewController {
     @Req() req,
     @Res() res: Response,
   ) {
-    const data = await this.gradeReviewService.markReviewClose(reviewId);
+    const data = await this.gradeReviewService.markReviewClose(
+      req.user.email,
+      reviewId,
+    );
     res.send(new ResponseWrapper(data, null, null));
   }
 }
