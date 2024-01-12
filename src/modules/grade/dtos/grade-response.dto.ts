@@ -36,6 +36,9 @@ export class StructureGradeResDto {
   @Expose()
   gradeParent: number;
 
+  @Expose()
+  isView: boolean;
+
   children?: number[];
 
   static fromDatabase = (data) => {
