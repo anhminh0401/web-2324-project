@@ -82,7 +82,7 @@ export class ClassService {
     const classInfo = await Class.findOne({ where: { classId: classId } });
     if (!classInfo) throw Errors.findNotFoundClass;
     const checkStudent = await ClassStudent.findOne({
-      where: { email: email },
+      where: { email: email, classId: classId },
     });
     if (checkStudent) throw Errors.joinedClass;
     await AppDataSource.transaction(async (transaction) => {
