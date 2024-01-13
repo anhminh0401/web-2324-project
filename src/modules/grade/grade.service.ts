@@ -268,48 +268,63 @@ export class GradeService {
   }
 
   // import student
-  public async importCsv(
+  public importCsv = async (
     userId: number,
     email: string,
     classId: string,
     fileBuffer: Buffer,
-  ): Promise<void> {
-    const role = await this.classService.checkRole(userId, email, classId);
-    if (role !== 'owner') throw Errors.notHaveRole;
-    try {
-      const studentsData: {
-        classId: string;
-        mssv: string;
-        fullname: string;
-      }[] = [];
+  ): Promise<boolean> => {
+    console.log('🚀 ~ GradeService ~ fileBuffer:', fileBuffer);
 
-      const readableStream = streamifier.createReadStream(fileBuffer);
+    return new Promise<boolean>(async (resolve, reject) => {
+      try {
+        const role = await this.classService.checkRole(userId, email, classId);
+        if (role !== 'owner') {
+          throw Errors.notHaveRole;
+        }
 
-      readableStream
-        .pipe(fastcsv.parse({ headers: true }))
-        .on('data', (row) => {
-          studentsData.push({
-            classId: classId,
-            mssv: row.StudentId,
-            fullname: row.FullName,
+        const studentsData: {
+          classId: string;
+          mssv: string;
+          fullname: string;
+        }[] = [];
+
+        const readableStream = streamifier.createReadStream(fileBuffer);
+
+        readableStream
+          .pipe(fastcsv.parse({ headers: true }))
+          .on('data', (row) => {
+            studentsData.push({
+              classId: classId,
+              mssv: row.StudentId,
+              fullname: row.FullName,
+            });
+          })
+          .on('end', async () => {
+            try {
+              await this.saveStudentsToDatabase(studentsData);
+              resolve(true);
+            } catch (error) {
+              console.error('Error saving students to database:', error);
+              reject(Errors.badRequest);
+            }
+          })
+          .on('error', (error) => {
+            console.error('Error parsing CSV:', error);
+            reject(Errors.badRequest);
           });
-        })
-        .on('end', async () => {
-          await this.saveStudentsToDatabase(studentsData);
-
-          return true;
-        });
-    } catch (error) {
-      console.error('Error importing CSV:', error);
-      throw Errors.badRequest;
-    }
-  }
+      } catch (error) {
+        console.error('Error importing CSV:', error);
+        reject(Errors.badRequest);
+      }
+    });
+  };
 
   private async saveStudentsToDatabase(
     studentsData: { classId: string; mssv: string; fullname: string }[],
   ): Promise<void> {
     await AppDataSource.transaction(async (transaction) => {
-      for (const data of studentsData) {
+      for await (const data of studentsData) {
         const existingRecord = await StudentReal.findOne({
           where: {
             classId: data.classId,
@@ -379,43 +394,60 @@ export class GradeService {
     return buffer;
   };
 
-  public async importAssignmentCsv(
+  public importAssignmentCsv = async (
     email: string,
     gradeId: number,
     fileBuffer: Buffer,
-  ): Promise<void> {
-    const grade = await GradeStructure.findOne({ where: { gradeId: gradeId } });
-    if (!grade) throw Errors.cannotImportAssignment;
-    await this.classService.checkTeacher(email, grade.classId);
-    const assignmentData: {
-      gradeId: number;
-      classId: string;
-      mssv: string;
-      point: number;
-    }[] = [];
-    try {
-      const readableStream = streamifier.createReadStream(fileBuffer);
-
-      readableStream
-        .pipe(fastcsv.parse({ headers: true }))
-        .on('data', (row) => {
-          assignmentData.push({
-            gradeId: gradeId,
-            classId: grade.classId,
-            mssv: row.StudentId,
-            point: row.Grade,
-          });
-        })
-        .on('end', async () => {
-          await this.saveAssginmentToDatabase(assignmentData);
-
-          return true;
+  ): Promise<boolean> => {
+    return new Promise<boolean>(async (resolve, reject) => {
+      try {
+        const grade = await GradeStructure.findOne({
+          where: { gradeId: gradeId },
         });
-    } catch (error) {
-      console.error('Error importing CSV:', error);
-      throw Errors.badRequest;
-    }
-  }
+        if (!grade) {
+          throw Errors.cannotImportAssignment;
+        }
+
+        await this.classService.checkTeacher(email, grade.classId);
+
+        const assignmentData: {
+          gradeId: number;
+          classId: string;
+          mssv: string;
+          point: number;
+        }[] = [];
+
+        const readableStream = streamifier.createReadStream(fileBuffer);
+
+        readableStream
+          .pipe(fastcsv.parse({ headers: true }))
+          .on('data', (row) => {
+            assignmentData.push({
+              gradeId: gradeId,
+              classId: grade.classId,
+              mssv: row.StudentId,
+              point: row.Grade,
+            });
+          })
+          .on('end', async () => {
+            try {
+              await this.saveAssginmentToDatabase(assignmentData);
+              resolve(true);
+            } catch (error) {
+              console.error('Error saving assignments to database:', error);
+              reject(Errors.badRequest);
+            }
+          })
+          .on('error', (error) => {
+            console.error('Error parsing CSV:', error);
+            reject(Errors.badRequest);
+          });
+      } catch (error) {
+        console.error('Error importing CSV:', error);
+        reject(Errors.badRequest);
+      }
+    });
+  };
 
   private async saveAssginmentToDatabase(
     assignmentData: {
@@ -426,7 +458,7 @@ export class GradeService {
     }[],
   ): Promise<void> {
     await AppDataSource.transaction(async (transaction) => {
-      for (const data of assignmentData) {
+      for await (const data of assignmentData) {
         const existingRecord = await GradeStudent.findOne({
           where: {
             gradeId: data.gradeId,
