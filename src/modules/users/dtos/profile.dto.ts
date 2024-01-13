@@ -33,6 +33,9 @@ export class InfoProfileResponse {
   @Expose()
   phoneNumber: string;
 
+  @Expose()
+  mssv: string;
+
   static fromDatabase = (data) => {
     return plainToInstance(InfoProfileResponse, data, {
       excludeExtraneousValues: true,

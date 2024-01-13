@@ -65,4 +65,5 @@ export const Errors = {
     'cannotCreateReview',
     'Không thể tạo review',
   ),
+  accountLock: new CustomError('accountLock', 'Tài khoản của bạn đã bị khóa'),
 };

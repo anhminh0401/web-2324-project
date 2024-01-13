@@ -33,6 +33,9 @@ export class AuthService {
     if (!user) {
       throw Errors.cannotSignIn;
     }
+    if (user.isLock) {
+      throw Errors.accountLock;
+    }
 
     const isPasswordValid = await bcrypt.compare(pass, user.password);
     if (!isPasswordValid) {
