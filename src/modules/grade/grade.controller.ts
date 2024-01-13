@@ -126,6 +126,7 @@ export class GradeController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('import-csv/:classId')
   @UseInterceptors(FileInterceptor('file'))
   async importCsv(
@@ -185,6 +186,7 @@ export class GradeController {
     res.status(200).send(buffer);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('import-assignment/:gradeId')
   @UseInterceptors(FileInterceptor('file'))
   async importAssignmentCsv(
@@ -238,6 +240,7 @@ export class GradeController {
     res.send(new ResponseWrapper(data, null, null));
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('export-board/:classId')
   async exportGradeBoard(
     @Param('classId') classId: string,
