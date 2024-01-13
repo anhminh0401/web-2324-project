@@ -46,7 +46,7 @@ export class ClassController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('participants')
+  @Post('participants')
   async getTeachersAndStudentsOfClass(
     @Body() getParticipantsDto: GetParticipantsDto,
     @Req() req,

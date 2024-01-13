@@ -10,6 +10,7 @@ export class GradeUpdateInfo {
   classId: string;
   gradeName: string;
   gradeScale: number;
+  gradeParent?: number;
 }
 
 export class InfoMarkGradeDto {
